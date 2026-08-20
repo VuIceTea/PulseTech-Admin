@@ -53,6 +53,19 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState("all");
+  const [showBrandSuggestions, setShowBrandSuggestions] = useState(false);
+
+  const categoryMap: Record<string, string> = {
+    'phone': 'Điện thoại',
+    'tablet': 'Máy tính bảng',
+    'laptop': 'Laptop',
+    'accessory': 'Phụ kiện',
+    'audio': 'Âm thanh'
+  };
+
   const getImageUrl = (url?: string) => {
     if (!url) return '';
     if (url.startsWith('http')) return url;
@@ -123,6 +136,11 @@ export default function ProductsPage() {
       ...prev,
       [name]: name === 'basePrice' || name === 'stock' ? Number(value) : value
     }));
+  };
+
+  const handleBrandSelect = (brand: string) => {
+    setFormData(prev => ({ ...prev, brand }));
+    setShowBrandSuggestions(false);
   };
 
   const handleSpecChange = (field: keyof ProductSpec, value: string) => {
@@ -250,12 +268,25 @@ export default function ProductsPage() {
 
         {/* Trending Section */}
         <div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
             <h2 className="text-2xl font-bold text-horizon-dark dark:text-white">Sản phẩm Nổi bật</h2>
-            <div className="flex items-center gap-4 text-sm font-medium text-horizon-brand dark:text-white">
-              <button className="text-horizon-brand font-bold">Tất cả</button>
-              <button className="text-horizon-gray hover:text-horizon-dark dark:hover:text-white transition-colors">Thiết bị</button>
-              <button className="text-horizon-gray hover:text-horizon-dark dark:hover:text-white transition-colors">Phụ kiện</button>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
+              <div className="relative w-full sm:w-64">
+                <input 
+                  type="text" 
+                  placeholder="Tìm kiếm sản phẩm, hãng..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white dark:bg-horizon-dark-card border border-gray-100 dark:border-white/10 rounded-full px-4 py-2 text-sm text-horizon-dark dark:text-white outline-none focus:ring-2 focus:ring-horizon-brand"
+                />
+              </div>
+              <div className="flex items-center gap-4 text-sm font-medium text-horizon-gray dark:text-white shrink-0 overflow-x-auto pb-1 sm:pb-0">
+                <button onClick={() => setSelectedFilter('all')} className={`${selectedFilter === 'all' ? 'text-horizon-brand font-bold' : 'hover:text-horizon-dark dark:hover:text-white transition-colors'}`}>Tất cả</button>
+                <button onClick={() => setSelectedFilter('phone')} className={`${selectedFilter === 'phone' ? 'text-horizon-brand font-bold' : 'hover:text-horizon-dark dark:hover:text-white transition-colors'}`}>Điện thoại</button>
+                <button onClick={() => setSelectedFilter('tablet')} className={`${selectedFilter === 'tablet' ? 'text-horizon-brand font-bold' : 'hover:text-horizon-dark dark:hover:text-white transition-colors'}`}>Tablet</button>
+                <button onClick={() => setSelectedFilter('laptop')} className={`${selectedFilter === 'laptop' ? 'text-horizon-brand font-bold' : 'hover:text-horizon-dark dark:hover:text-white transition-colors'}`}>Laptop</button>
+                <button onClick={() => setSelectedFilter('accessory')} className={`${selectedFilter === 'accessory' ? 'text-horizon-brand font-bold' : 'hover:text-horizon-dark dark:hover:text-white transition-colors'}`}>Phụ kiện</button>
+              </div>
             </div>
           </div>
 
@@ -268,9 +299,23 @@ export default function ProductsPage() {
                   <div className="w-1/3 h-4 bg-gray-200 dark:bg-white/10 rounded" />
                 </div>
               ))
-            ) : products.length > 0 ? (
-              products.map((product) => (
-                <div key={product.id} className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] group hover:-translate-y-1 transition-transform relative">
+            ) : (() => {
+              const filteredProducts = products.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.brand.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesFilter = selectedFilter === 'all' ? true : p.category === selectedFilter;
+                return matchesSearch && matchesFilter;
+              });
+              
+              if (filteredProducts.length === 0) {
+                return (
+                  <div className="col-span-full text-center py-12 text-horizon-gray dark:text-horizon-dark-gray font-medium">
+                    Không tìm thấy sản phẩm nào!
+                  </div>
+                );
+              }
+
+              return filteredProducts.map((product) => (
+                <div key={product.id} className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] group hover:-translate-y-1 transition-transform relative cursor-pointer">
                   <div className="w-full h-48 rounded-xl bg-gray-50 dark:bg-horizon-dark-bg mb-4 relative overflow-hidden flex items-center justify-center p-2">
                     {product.image ? (
                       <img src={getImageUrl(product.imageUrl || product.image)} alt={product.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
@@ -308,20 +353,16 @@ export default function ProductsPage() {
                   </div>
 
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="font-bold text-horizon-dark dark:text-white">
+                    <span className="font-bold text-red-500">
                       {product.basePrice.toLocaleString('vi-VN')} đ
                     </span>
-                    <button className="bg-[#F4F7FE] dark:bg-white/10 text-horizon-brand dark:text-white text-xs font-bold px-4 py-2 rounded-full">
-                      {product.category}
+                    <button className="bg-[#F4F7FE] dark:bg-white/10 text-horizon-brand dark:text-white text-xs font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
+                      {categoryMap[product.category] || product.category}
                     </button>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12 text-horizon-gray dark:text-horizon-dark-gray font-medium">
-                Chưa có sản phẩm nào. Hãy tạo sản phẩm mới!
-              </div>
-            )}
+              ));
+            })()}
           </div>
         </div>
       </div>
@@ -337,7 +378,7 @@ export default function ProductsPage() {
           </div>
 
           <div className="space-y-4">
-            {products.slice(0, 8).map((p, i) => (
+            {[...products].sort((a, b) => a.stock - b.stock).slice(0, 8).map((p, i) => (
               <div key={p.id || i} className="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-12 h-12 rounded-xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center p-1">
@@ -382,40 +423,85 @@ export default function ProductsPage() {
                 </h3>
                 <div className="space-y-5 bg-gray-50 dark:bg-white/5 p-5 rounded-2xl">
                   <div>
-                    <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">Tên sản phẩm *</label>
+                    <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">
+                      Tên sản phẩm <span className="text-red-500">*</span>
+                    </label>
                     <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">Hãng sản xuất *</label>
-                      <input required type="text" name="brand" value={formData.brand} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
+                    <div className="relative">
+                      <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">
+                        Hãng sản xuất <span className="text-red-500">*</span>
+                      </label>
+                      <input 
+                        required 
+                        type="text" 
+                        name="brand" 
+                        value={formData.brand} 
+                        onChange={(e) => {
+                          handleInputChange(e);
+                          setShowBrandSuggestions(true);
+                        }} 
+                        onFocus={() => setShowBrandSuggestions(true)}
+                        onBlur={() => setTimeout(() => setShowBrandSuggestions(false), 200)}
+                        className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" 
+                        autoComplete="off"
+                      />
+                      {showBrandSuggestions && (() => {
+                        const uniqueBrands = Array.from(new Set(products.map(p => p.brand).filter(Boolean)));
+                        const filteredBrands = uniqueBrands.filter(b => b.toLowerCase().includes((formData.brand || "").toLowerCase()));
+                        if (filteredBrands.length > 0) {
+                          return (
+                            <div className="absolute z-10 w-full mt-1 bg-white dark:bg-horizon-dark-card border border-gray-100 dark:border-white/10 rounded-xl shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
+                              {filteredBrands.map((b, idx) => (
+                                <div 
+                                  key={idx} 
+                                  className="px-4 py-2 text-sm text-horizon-dark dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors"
+                                  onClick={() => handleBrandSelect(b)}
+                                >
+                                  {b}
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">Danh mục *</label>
+                      <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">
+                        Danh mục <span className="text-red-500">*</span>
+                      </label>
                       <select required name="category" value={formData.category} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm">
-                        <option value="phone">Điện thoại (phone)</option>
-                        <option value="tablet">Máy tính bảng (tablet)</option>
-                        <option value="laptop">Laptop (laptop)</option>
-                        <option value="accessory">Phụ kiện (accessory)</option>
-                        <option value="audio">Âm thanh (audio)</option>
+                        <option value="phone">Điện thoại</option>
+                        <option value="tablet">Máy tính bảng</option>
+                        <option value="laptop">Laptop</option>
+                        <option value="accessory">Phụ kiện</option>
+                        <option value="audio">Âm thanh</option>
                       </select>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">Giá bán cơ bản (VNĐ) *</label>
+                      <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">
+                        Giá bán cơ bản (VNĐ) <span className="text-red-500">*</span>
+                      </label>
                       <input required type="number" min="0" name="basePrice" value={formData.basePrice} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-mono text-horizon-brand font-bold outline-none focus:border-horizon-brand transition-colors shadow-sm" />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">Số lượng Tồn kho *</label>
+                      <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">
+                        Số lượng Tồn kho <span className="text-red-500">*</span>
+                      </label>
                       <input required type="number" min="0" name="stock" value={formData.stock} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-bold text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">Hình ảnh Sản phẩm *</label>
+                    <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">
+                      Hình ảnh Sản phẩm <span className="text-red-500">*</span>
+                    </label>
                     <div className="flex items-center gap-4 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl p-2 shadow-sm">
                       {formData.image ? (
                         <img src={getImageUrl(formData.image)} alt="Preview" className="w-12 h-12 rounded-lg object-contain bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10" />
