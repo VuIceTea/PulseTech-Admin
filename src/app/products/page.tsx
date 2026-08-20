@@ -625,7 +625,6 @@ export default function ProductsPage() {
                         />
                       </div>
                     </div>
-                  </div>
                   
                   <div className="mt-5">
                     <label className="block text-sm font-bold text-black dark:text-white mb-2">
