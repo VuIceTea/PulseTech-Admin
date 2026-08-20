@@ -8,6 +8,7 @@ interface ColorVariant {
   name: string;
   hex: string;
   image?: string;
+  priceOffset?: number;
 }
 
 interface StorageVariant {
@@ -82,6 +83,7 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<Partial<Product>>({
     name: "",
     brand: "",
@@ -157,9 +159,9 @@ export default function ProductsPage() {
     }));
   };
 
-  const addColor = () => setFormData(p => ({ ...p, colors: [...(p.colors || []), { name: "", hex: "#000000" }] }));
+  const addColor = () => setFormData(p => ({ ...p, colors: [...(p.colors || []), { name: "", hex: "#000000", priceOffset: 0 }] }));
   const removeColor = (idx: number) => setFormData(p => ({ ...p, colors: (p.colors || []).filter((_, i) => i !== idx) }));
-  const updateColor = (idx: number, field: string, val: string) => {
+  const updateColor = (idx: number, field: string, val: string | number) => {
     const newColors = [...(formData.colors || [])];
     newColors[idx] = { ...newColors[idx], [field]: val };
     setFormData(p => ({ ...p, colors: newColors }));
@@ -341,7 +343,7 @@ export default function ProductsPage() {
               }
 
               return currentProducts.map((product) => (
-                <div key={product.id} className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] group hover:-translate-y-1 transition-transform relative cursor-pointer">
+                <div key={product.id} onClick={() => setViewingProduct(product)} className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] group hover:-translate-y-1 transition-transform relative cursor-pointer">
                   <div className="w-full h-48 rounded-xl bg-gray-50 dark:bg-horizon-dark-bg mb-4 relative overflow-hidden flex items-center justify-center p-2">
                     {product.image ? (
                       <img src={getImageUrl(product.imageUrl || product.image)} alt={product.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
@@ -358,10 +360,10 @@ export default function ProductsPage() {
                     
                     {/* Action overlay */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 z-20">
-                      <button onClick={() => openEditModal(product)} className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100">
+                      <button onClick={(e) => { e.stopPropagation(); openEditModal(product); }} className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100 cursor-pointer">
                         <Edit2 className="h-4 w-4" /> Sửa
                       </button>
-                      <button onClick={() => handleDelete(product.id)} className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-600">
+                      <button onClick={(e) => { e.stopPropagation(); handleDelete(product.id); }} className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-600 cursor-pointer">
                         <Trash2 className="h-4 w-4" /> Xóa
                       </button>
                     </div>
@@ -617,6 +619,7 @@ export default function ProductsPage() {
                   {formData.colors?.map((c, i) => (
                     <div key={i} className="flex items-center gap-4 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-100 dark:border-white/10">
                       <input type="text" placeholder="Tên màu (VD: Đen nhám)" value={c.name} onChange={(e) => updateColor(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" required />
+                      <input type="number" placeholder="Giá cộng thêm (VNĐ)" value={c.priceOffset || 0} onChange={(e) => updateColor(i, 'priceOffset', Number(e.target.value))} className="w-40 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none shrink-0" />
                       <input type="color" value={c.hex} onChange={(e) => updateColor(i, 'hex', e.target.value)} className="w-10 h-10 rounded cursor-pointer shrink-0" title="Mã màu" />
                       
                       <div className="relative shrink-0">
@@ -764,6 +767,104 @@ export default function ProductsPage() {
               <button type="submit" onClick={handleSubmit} disabled={isSubmitting || isUploading} className="flex-1 bg-horizon-brand text-white font-bold py-3.5 rounded-xl hover:bg-horizon-brand/90 transition-colors shadow-lg shadow-horizon-brand/30 disabled:opacity-70 text-base cursor-pointer">
                 {isSubmitting ? "Đang lưu hệ thống..." : isUploading ? "Đang tải ảnh..." : "Lưu Sản Phẩm & Biến thể"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Detail Modal */}
+      {viewingProduct && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setViewingProduct(null)}>
+          <div className="bg-white dark:bg-horizon-dark-bg w-full max-w-2xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/5 shrink-0">
+              <h2 className="text-xl font-bold text-black dark:text-white">Chi tiết sản phẩm</h2>
+              <button onClick={() => setViewingProduct(null)} className="p-2 bg-white dark:bg-white/10 rounded-full text-horizon-gray hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 transition-colors cursor-pointer shadow-sm">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto space-y-6">
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="w-full md:w-1/3 bg-gray-50 dark:bg-white/5 rounded-2xl p-4 flex items-center justify-center border border-gray-100 dark:border-white/10 h-48 md:h-auto shrink-0">
+                  {viewingProduct.image ? (
+                    <img src={getImageUrl(viewingProduct.imageUrl || viewingProduct.image)} alt={viewingProduct.name} className="w-full h-full object-contain" />
+                  ) : (
+                    <div className="w-32 h-32 bg-gradient-to-tr from-[#868CFF] to-[#4318FF] rounded-lg shadow-lg rotate-12" />
+                  )}
+                </div>
+                <div className="w-full md:w-2/3 space-y-4">
+                  <h3 className="text-2xl font-bold text-black dark:text-white">{viewingProduct.name}</h3>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-3 py-1 bg-gray-100 dark:bg-white/10 text-horizon-gray dark:text-white rounded-full text-sm font-bold">{viewingProduct.brand}</span>
+                    <span className="px-3 py-1 bg-horizon-brand/10 text-horizon-brand rounded-full text-sm font-bold">{categoryMap[viewingProduct.category] || viewingProduct.category}</span>
+                    {viewingProduct.stock === 0 && (
+                      <span className="px-3 py-1 bg-red-100 text-red-600 rounded-full text-sm font-bold">Hết hàng</span>
+                    )}
+                  </div>
+                  <div className="flex flex-col mt-4 p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10">
+                    <div className="flex items-baseline gap-3">
+                      <span className="text-3xl font-extrabold text-red-500">{viewingProduct.basePrice.toLocaleString('vi-VN')} đ</span>
+                      {viewingProduct.originalPrice && viewingProduct.originalPrice > viewingProduct.basePrice ? (
+                        <span className="text-lg text-gray-400 line-through font-medium">{viewingProduct.originalPrice.toLocaleString('vi-VN')} đ</span>
+                      ) : null}
+                    </div>
+                    {viewingProduct.discount && viewingProduct.discount > 0 ? (
+                      <span className="text-sm font-bold text-red-500 bg-red-100 px-2 py-1 rounded w-max mt-2">Giảm {viewingProduct.discount}%</span>
+                    ) : null}
+                  </div>
+                  <p className="text-sm font-medium text-horizon-gray">Tồn kho: <span className="font-bold text-black dark:text-white">{viewingProduct.stock} sản phẩm</span></p>
+                </div>
+              </div>
+
+              {((viewingProduct.colors && viewingProduct.colors.length > 0) || (viewingProduct.storages && viewingProduct.storages.length > 0)) && (
+                <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-white/10">
+                  <h4 className="text-lg font-bold text-black dark:text-white border-l-4 border-horizon-brand pl-2">Biến thể</h4>
+                  
+                  {viewingProduct.colors && viewingProduct.colors.length > 0 && (
+                    <div>
+                      <p className="text-sm font-bold text-horizon-gray mb-2">Màu sắc</p>
+                      <div className="flex flex-wrap gap-2">
+                        {viewingProduct.colors.map((c, i) => (
+                          <div key={i} className="flex items-center gap-2 bg-white dark:bg-horizon-dark-card border border-gray-200 dark:border-white/10 px-3 py-2 rounded-xl text-sm shadow-sm">
+                            <span className="w-5 h-5 rounded-full border border-gray-200 shadow-sm" style={{ backgroundColor: c.hex }}></span>
+                            <span className="font-bold text-black dark:text-white">{c.name}</span>
+                            {c.priceOffset ? <span className="text-red-500 font-bold ml-1">(+{c.priceOffset.toLocaleString('vi-VN')} đ)</span> : null}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {viewingProduct.storages && viewingProduct.storages.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm font-bold text-horizon-gray mb-2">Dung lượng</p>
+                      <div className="flex flex-wrap gap-2">
+                        {viewingProduct.storages.map((s, i) => (
+                          <div key={i} className="flex items-center gap-2 bg-white dark:bg-horizon-dark-card border border-gray-200 dark:border-white/10 px-3 py-2 rounded-xl text-sm shadow-sm">
+                            <span className="font-bold text-black dark:text-white">{s.name}</span>
+                            {s.priceOffset ? <span className="text-red-500 font-bold ml-1">(+{s.priceOffset.toLocaleString('vi-VN')} đ)</span> : null}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {viewingProduct.specs && Object.keys(viewingProduct.specs).length > 0 && (
+                <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-white/10">
+                  <h4 className="text-lg font-bold text-black dark:text-white border-l-4 border-horizon-brand pl-2">Thông số kỹ thuật</h4>
+                  <div className="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-white/5 p-4 rounded-2xl border border-gray-100 dark:border-white/10">
+                    {Object.entries(viewingProduct.specs).map(([key, val]) => (
+                      val ? (
+                        <div key={key} className="flex flex-col">
+                          <span className="text-xs text-horizon-gray capitalize">{key}</span>
+                          <span className="text-sm font-medium text-black dark:text-white">{val}</span>
+                        </div>
+                      ) : null
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
