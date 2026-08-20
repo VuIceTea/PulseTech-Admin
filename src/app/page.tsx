@@ -82,83 +82,83 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         
         {/* Total Revenue */}
-        <div className="bg-white rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
-          <div className="h-14 w-14 rounded-full bg-[#F4F7FE] flex items-center justify-center text-horizon-brand">
+        <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+          <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
             <BarChart3 className="h-7 w-7" />
           </div>
           <div>
-            <p className="text-sm font-medium text-horizon-gray">Total Revenue</p>
-            <p className="text-2xl font-bold text-horizon-dark tracking-tight">
+            <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Tổng Doanh Thu</p>
+            <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
               {totalRevenue > 0 ? `$${(totalRevenue / 25000).toFixed(1)}K` : "$340.5"}
             </p>
           </div>
         </div>
 
         {/* Total Orders */}
-        <div className="bg-white rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
-          <div className="h-14 w-14 rounded-full bg-[#F4F7FE] flex items-center justify-center text-horizon-brand">
+        <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+          <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
             <FileText className="h-7 w-7" />
           </div>
           <div>
-            <p className="text-sm font-medium text-horizon-gray">Total Orders</p>
-            <p className="text-2xl font-bold text-horizon-dark tracking-tight">
+            <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Tổng Đơn Hàng</p>
+            <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
               {totalOrders > 0 ? totalOrders : "642"}
             </p>
           </div>
         </div>
 
         {/* Total Products */}
-        <div className="bg-white rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
-          <div className="h-14 w-14 rounded-full bg-[#F4F7FE] flex items-center justify-center text-horizon-brand">
+        <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+          <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
             <BarChart className="h-7 w-7" />
           </div>
           <div>
-            <p className="text-sm font-medium text-horizon-gray">Products Active</p>
-            <p className="text-2xl font-bold text-horizon-dark tracking-tight">
+            <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Sản Phẩm Active</p>
+            <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
               {totalProducts > 0 ? totalProducts : "574"}
             </p>
           </div>
         </div>
 
         {/* Total Customers */}
-        <div className="bg-white rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
-          <div className="h-14 w-14 rounded-full bg-[#F4F7FE] flex items-center justify-center text-horizon-brand">
+        <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+          <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
             <div className="grid grid-cols-2 gap-[2px]">
-              <div className="w-2.5 h-2.5 bg-horizon-brand rounded-[2px]" />
-              <div className="w-2.5 h-2.5 bg-horizon-brand rounded-[2px]" />
-              <div className="w-2.5 h-2.5 bg-horizon-brand rounded-[2px]" />
-              <div className="w-2.5 h-2.5 bg-[#E2E8F0] rounded-[2px]" />
+              <div className="w-2.5 h-2.5 bg-horizon-brand dark:bg-white rounded-[2px]" />
+              <div className="w-2.5 h-2.5 bg-horizon-brand dark:bg-white rounded-[2px]" />
+              <div className="w-2.5 h-2.5 bg-horizon-brand dark:bg-white rounded-[2px]" />
+              <div className="w-2.5 h-2.5 bg-[#E2E8F0] dark:bg-white/20 rounded-[2px]" />
             </div>
           </div>
           <div>
-            <p className="text-sm font-medium text-horizon-gray">Total Customers</p>
-            <p className="text-2xl font-bold text-horizon-dark tracking-tight">
+            <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Khách Hàng</p>
+            <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
               {totalUsers > 0 ? totalUsers : "1,000"}
             </p>
           </div>
         </div>
 
         {/* Pending Orders */}
-        <div className="bg-white rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
-          <div className="h-14 w-14 rounded-full bg-[#F4F7FE] flex items-center justify-center text-horizon-brand">
+        <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+          <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
             <CheckSquare className="h-7 w-7" />
           </div>
           <div>
-            <p className="text-sm font-medium text-horizon-gray">Pending Orders</p>
-            <p className="text-2xl font-bold text-horizon-dark tracking-tight">
+            <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Đơn Chờ Xử Lý</p>
+            <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
               {pendingOrders > 0 ? pendingOrders : "145"}
             </p>
           </div>
         </div>
 
         {/* Categories */}
-        <div className="bg-white rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
-          <div className="h-14 w-14 rounded-full bg-[#F4F7FE] flex items-center justify-center text-horizon-brand">
+        <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+          <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
             <Home className="h-7 w-7" />
           </div>
           <div>
-            <p className="text-sm font-medium text-horizon-gray">Total Categories</p>
-            <p className="text-2xl font-bold text-horizon-dark tracking-tight">
+            <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Danh Mục</p>
+            <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
               4
             </p>
           </div>
@@ -169,24 +169,24 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         
         {/* Line Chart Widget */}
-        <div className="bg-white rounded-[20px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex flex-col">
+        <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex flex-col">
           <div className="flex items-center justify-between mb-8">
-            <button className="flex items-center gap-2 bg-[#F4F7FE] text-horizon-gray px-3 py-1.5 rounded-lg text-sm font-medium">
+            <button className="flex items-center gap-2 bg-[#F4F7FE] dark:bg-horizon-dark-bg text-horizon-gray dark:text-horizon-dark-gray px-3 py-1.5 rounded-lg text-sm font-medium">
               <Calendar className="h-4 w-4" />
-              <span>This month</span>
+              <span>Tháng này</span>
             </button>
-            <div className="h-8 w-8 rounded-lg bg-[#F4F7FE] flex items-center justify-center text-horizon-brand">
+            <div className="h-8 w-8 rounded-lg bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
               <BarChart3 className="h-4 w-4" />
             </div>
           </div>
           
           <div className="flex items-end justify-between mb-6">
             <div>
-              <h2 className="text-[34px] font-bold text-horizon-dark leading-tight">
+              <h2 className="text-[34px] font-bold text-horizon-dark dark:text-white leading-tight">
                 {totalRevenue > 0 ? `$${(totalRevenue / 25000).toFixed(1)}K` : "$37.5K"}
               </h2>
               <div className="flex items-center gap-2 text-sm font-medium">
-                <span className="text-horizon-gray">Total Revenue</span>
+                <span className="text-horizon-gray dark:text-horizon-dark-gray">Tổng chi tiêu</span>
                 <span className="text-[#05CD99] flex items-center">
                   <svg className="w-3 h-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 15l7-7 7 7" />
@@ -219,7 +219,7 @@ export default function AdminDashboardPage() {
             </svg>
             
             {/* X Axis Labels */}
-            <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[11px] font-bold text-horizon-gray px-4">
+            <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[11px] font-bold text-horizon-gray dark:text-horizon-dark-gray px-4">
               <span>SEP</span>
               <span>OCT</span>
               <span>NOV</span>
@@ -231,10 +231,10 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Bar Chart Widget */}
-        <div className="bg-white rounded-[20px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex flex-col">
+        <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex flex-col">
           <div className="flex items-center justify-between mb-10">
-            <h2 className="text-xl font-bold text-horizon-dark">Weekly Revenue</h2>
-            <div className="h-8 w-8 rounded-lg bg-[#F4F7FE] flex items-center justify-center text-horizon-brand">
+            <h2 className="text-xl font-bold text-horizon-dark dark:text-white">Doanh thu tuần</h2>
+            <div className="h-8 w-8 rounded-lg bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
               <BarChart3 className="h-4 w-4" />
             </div>
           </div>
@@ -253,11 +253,11 @@ export default function AdminDashboardPage() {
             ].map((bar, i) => (
               <div key={i} className="flex flex-col items-center gap-3 w-4">
                 <div className="w-full h-48 flex flex-col justify-end gap-1">
-                  <div className="w-full bg-[#E9EDF7] rounded-t-full" style={{ height: bar.h3 }} />
+                  <div className="w-full bg-[#E9EDF7] dark:bg-white/10 rounded-t-full" style={{ height: bar.h3 }} />
                   <div className="w-full bg-[#4318FF]" style={{ height: bar.h2 }} />
                   <div className="w-full bg-[#6AD2FF] rounded-b-full" style={{ height: bar.h1 }} />
                 </div>
-                <span className="text-[11px] font-bold text-horizon-gray">{bar.day}</span>
+                <span className="text-[11px] font-bold text-horizon-gray dark:text-horizon-dark-gray">{bar.day}</span>
               </div>
             ))}
           </div>

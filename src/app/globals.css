@@ -5,6 +5,11 @@
   --foreground: #2B3674;
 }
 
+.dark {
+  --background: #0B1437;
+  --foreground: #FFFFFF;
+}
+
 @theme {
   --font-sans: "DM Sans", var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --color-horizon-bg: #F4F7FE;
@@ -12,6 +17,10 @@
   --color-horizon-brand: #4318FF;
   --color-horizon-dark: #2B3674;
   --color-horizon-gray: #A3AED0;
+  
+  --color-horizon-dark-bg: #0B1437;
+  --color-horizon-dark-card: #111C44;
+  --color-horizon-dark-gray: #8F9BBA;
 }
 
 body {
