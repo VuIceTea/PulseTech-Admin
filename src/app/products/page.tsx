@@ -47,6 +47,7 @@ interface Product {
   stock: number;
   description?: string;
   image?: string;
+  images?: string[];
   colors: ColorVariant[];
   storages: StorageVariant[];
   specs?: ProductSpec;
@@ -93,6 +94,7 @@ export default function ProductsPage() {
     discount: 0,
     stock: 0,
     image: "",
+    images: [],
     description: "",
     colors: [],
     storages: [],
@@ -187,6 +189,31 @@ export default function ProductsPage() {
       if (!res.ok) throw new Error('Upload failed');
       const data = await res.json();
       callback(data.url);
+    } catch (err) {
+      console.error(err);
+      toast.error('Lỗi khi tải ảnh lên');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleMultipleFileUpload = async (files: FileList) => {
+    setIsUploading(true);
+    try {
+      const newImageUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadData
+        });
+        if (!res.ok) throw new Error('Upload failed');
+        const data = await res.json();
+        newImageUrls.push(data.url);
+      }
+      setFormData(p => ({ ...p, images: [...(p.images || []), ...newImageUrls] }));
     } catch (err) {
       console.error(err);
       toast.error('Lỗi khi tải ảnh lên');
@@ -576,25 +603,55 @@ export default function ProductsPage() {
                     </div>
                   </div>
 
-                  <div>
+                    <div>
+                      <label className="block text-sm font-bold text-black dark:text-white mb-2">
+                        Hình ảnh đại diện <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex items-center gap-4 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl p-2 shadow-sm">
+                        {formData.image ? (
+                          <img src={getImageUrl(formData.image)} alt="Preview" className="w-12 h-12 rounded-lg object-contain bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-white/5 flex items-center justify-center text-horizon-gray text-xs text-center border border-dashed border-gray-200 dark:border-white/10">Ảnh</div>
+                        )}
+                        <input 
+                          type="file" 
+                          accept="image/*"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              handleFileUpload(e.target.files[0], (url) => setFormData(p => ({ ...p, image: url })));
+                            }
+                          }}
+                          className="flex-1 text-sm text-horizon-gray file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#F4F7FE] dark:file:bg-white/10 file:text-horizon-brand dark:file:text-white hover:file:bg-gray-100 dark:hover:file:bg-white/20 transition-colors cursor-pointer" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-5">
                     <label className="block text-sm font-bold text-black dark:text-white mb-2">
-                      Hình ảnh Sản phẩm <span className="text-red-500">*</span>
+                      Bộ sưu tập ảnh (Gallery)
                     </label>
-                    <div className="flex items-center gap-4 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl p-2 shadow-sm">
-                      {formData.image ? (
-                        <img src={getImageUrl(formData.image)} alt="Preview" className="w-12 h-12 rounded-lg object-contain bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10" />
-                      ) : (
-                        <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-white/5 flex items-center justify-center text-horizon-gray text-xs text-center border border-dashed border-gray-200 dark:border-white/10">Ảnh</div>
-                      )}
+                    <div className="bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl p-4 shadow-sm">
+                      <div className="flex flex-wrap gap-4 mb-4">
+                        {formData.images?.map((img, idx) => (
+                          <div key={idx} className="relative w-20 h-20 group">
+                            <img src={getImageUrl(img)} alt={`Gallery ${idx}`} className="w-full h-full object-contain rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5" />
+                            <button type="button" onClick={() => setFormData(p => ({ ...p, images: p.images?.filter((_, i) => i !== idx) }))} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                       <input 
                         type="file" 
                         accept="image/*"
+                        multiple
                         onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            handleFileUpload(e.target.files[0], (url) => setFormData(p => ({ ...p, image: url })));
+                          if (e.target.files && e.target.files.length > 0) {
+                            handleMultipleFileUpload(e.target.files);
                           }
                         }}
-                        className="flex-1 text-sm text-horizon-gray file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#F4F7FE] dark:file:bg-white/10 file:text-horizon-brand dark:file:text-white hover:file:bg-gray-100 dark:hover:file:bg-white/20 transition-colors cursor-pointer" 
+                        className="w-full text-sm text-horizon-gray file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#F4F7FE] dark:file:bg-white/10 file:text-horizon-brand dark:file:text-white hover:file:bg-gray-100 dark:hover:file:bg-white/20 transition-colors cursor-pointer" 
                       />
                     </div>
                   </div>
@@ -786,16 +843,30 @@ export default function ProductsPage() {
             
             <div className="flex flex-col md:flex-row h-full overflow-y-auto">
               {/* Left Image Section - Sticky */}
-              <div className="w-full md:w-[45%] bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10 p-8 flex items-center justify-center relative md:sticky top-0 min-h-[300px] md:h-auto shrink-0">
+              <div className="w-full md:w-[45%] bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10 p-8 flex flex-col items-center justify-center relative md:sticky top-0 min-h-[300px] md:h-auto shrink-0">
                 {viewingProduct.stock === 0 && (
                   <div className="absolute top-6 left-6 bg-red-500 text-white font-bold px-3 py-1.5 rounded-lg text-sm shadow-lg z-10 animate-pulse">
                     ĐÃ HẾT HÀNG
                   </div>
                 )}
                 {viewingProduct.image ? (
-                  <img src={getImageUrl(viewingProduct.imageUrl || viewingProduct.image)} alt={viewingProduct.name} className="w-full h-full object-contain filter drop-shadow-2xl hover:scale-105 transition-transform duration-500" />
+                  <img src={getImageUrl(viewingProduct.imageUrl || viewingProduct.image)} alt={viewingProduct.name} className="w-full max-h-[400px] object-contain filter drop-shadow-2xl hover:scale-105 transition-transform duration-500 mb-6" />
                 ) : (
-                  <div className="w-48 h-48 bg-gradient-to-tr from-[#868CFF] to-[#4318FF] rounded-[30px] shadow-2xl rotate-12" />
+                  <div className="w-48 h-48 bg-gradient-to-tr from-[#868CFF] to-[#4318FF] rounded-[30px] shadow-2xl rotate-12 mb-6" />
+                )}
+                
+                {/* Thumbnails Gallery */}
+                {viewingProduct.images && viewingProduct.images.length > 0 && (
+                  <div className="flex gap-3 overflow-x-auto w-full no-scrollbar px-2 pb-2 justify-center">
+                    <div className="w-16 h-16 rounded-xl bg-white border-2 border-horizon-brand overflow-hidden flex items-center justify-center p-1 shrink-0 cursor-pointer shadow-sm">
+                      <img src={getImageUrl(viewingProduct.image)} alt="Main thumbnail" className="object-contain w-full h-full" />
+                    </div>
+                    {viewingProduct.images.map((img, idx) => (
+                      <div key={idx} className="w-16 h-16 rounded-xl bg-white border border-gray-200 dark:border-white/10 overflow-hidden flex items-center justify-center p-1 shrink-0 cursor-pointer hover:border-horizon-brand/50 transition-colors shadow-sm">
+                        <img src={getImageUrl(img)} alt={`Thumbnail ${idx}`} className="object-contain w-full h-full" />
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
               
