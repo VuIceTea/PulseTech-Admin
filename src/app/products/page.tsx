@@ -299,11 +299,11 @@ export default function ProductsPage() {
                   }}
                 />
                 
-                <button onClick={() => setSelectedFilter('all')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[60px] ${selectedFilter === 'all' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Tất cả</button>
-                <button onClick={() => setSelectedFilter('phone')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[90px] ${selectedFilter === 'phone' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Điện thoại</button>
-                <button onClick={() => setSelectedFilter('tablet')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[65px] ${selectedFilter === 'tablet' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Tablet</button>
-                <button onClick={() => setSelectedFilter('laptop')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[70px] ${selectedFilter === 'laptop' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Laptop</button>
-                <button onClick={() => setSelectedFilter('accessory')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[85px] ${selectedFilter === 'accessory' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Phụ kiện</button>
+                <button onClick={() => setSelectedFilter('all')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[60px] whitespace-nowrap ${selectedFilter === 'all' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Tất cả</button>
+                <button onClick={() => setSelectedFilter('phone')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[90px] whitespace-nowrap ${selectedFilter === 'phone' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Điện thoại</button>
+                <button onClick={() => setSelectedFilter('tablet')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[65px] whitespace-nowrap ${selectedFilter === 'tablet' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Tablet</button>
+                <button onClick={() => setSelectedFilter('laptop')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[70px] whitespace-nowrap ${selectedFilter === 'laptop' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Laptop</button>
+                <button onClick={() => setSelectedFilter('accessory')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[85px] whitespace-nowrap ${selectedFilter === 'accessory' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Phụ kiện</button>
               </div>
             </div>
           </div>
@@ -364,9 +364,6 @@ export default function ProductsPage() {
                       <h3 className="text-lg font-bold text-black dark:text-white mb-1 truncate">
                         {product.name}
                       </h3>
-                      <p className="text-sm font-medium text-horizon-gray dark:text-black-gray truncate">
-                        Bởi {product.brand} • Kho: {product.stock}
-                      </p>
                     </div>
                   </div>
 
@@ -413,8 +410,8 @@ export default function ProductsPage() {
             {[...products].sort((a, b) => a.stock - b.stock).slice(0, 8).map((p, i) => (
               <div key={p.id || i} className="relative flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
                 {i < 3 && (
-                  <div className="absolute -top-2 -left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm z-10 flex items-center gap-1">
-                    <span>🔥</span> #{i + 1}
+                  <div className={`absolute -top-2 -left-2 w-6 h-6 flex items-center justify-center rounded-full text-white text-[11px] font-extrabold shadow-sm z-10 ${i === 0 ? 'bg-yellow-400' : i === 1 ? 'bg-gray-400' : 'bg-amber-600'}`}>
+                    {i + 1}
                   </div>
                 )}
                 <div className="flex items-center gap-3 min-w-0 pt-1">
