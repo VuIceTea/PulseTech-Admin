@@ -5,22 +5,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Geist } from "next/font/google";
 import { ThemeProvider, useTheme } from "next-themes";
-import { 
-  Home, 
-  Package, 
-  ShoppingCart, 
-  Users, 
-  Search, 
-  Bell, 
-  Info, 
-  Moon, 
+import {
+  Home,
+  Package,
+  ShoppingCart,
+  Users,
+  Search,
+  Bell,
+  Info,
+  Moon,
   Sun,
   Menu,
   X,
   Settings,
   Mail,
-  LogOut,
-  Ticket
+  LogOut
 } from "lucide-react";
 import "./globals.css";
 import { Toaster } from "sonner";
@@ -46,7 +45,6 @@ function Header() {
       case "/products": return "Sản Phẩm";
       case "/orders": return "Đơn Hàng";
       case "/customers": return "Khách Hàng";
-      case "/vouchers": return "Mã Giảm Giá";
       default: return "Bảng Điều Khiển";
     }
   };
@@ -77,15 +75,15 @@ function Header() {
         <button className="text-horizon-gray dark:text-horizon-dark-gray hover:text-horizon-dark dark:hover:text-white transition-colors p-1">
           <Info className="h-5 w-5" />
         </button>
-        <button 
+        <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className="text-horizon-gray dark:text-horizon-dark-gray hover:text-horizon-dark dark:hover:text-white transition-colors p-1"
         >
           {mounted && theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </button>
-        
+
         <div className="relative ml-1">
-          <div 
+          <div
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className="h-10 w-10 shrink-0 rounded-full bg-horizon-brand flex items-center justify-center text-white font-bold shadow-md cursor-pointer overflow-hidden ring-2 ring-transparent hover:ring-horizon-brand/50 transition-all"
           >
@@ -149,7 +147,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     { name: "Sản Phẩm", href: "/products", icon: Package },
     { name: "Đơn Hàng", href: "/orders", icon: ShoppingCart },
     { name: "Khách Hàng", href: "/customers", icon: Users },
-    { name: "Mã Giảm Giá", href: "/vouchers", icon: Ticket },
   ];
 
   return (
@@ -192,9 +189,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                      active ? "text-horizon-brand dark:text-white font-bold" : "text-horizon-gray dark:text-horizon-dark-gray font-medium hover:text-horizon-dark dark:hover:text-white"
-                    }`}
+                    className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${active ? "text-horizon-brand dark:text-white font-bold" : "text-horizon-gray dark:text-horizon-dark-gray font-medium hover:text-horizon-dark dark:hover:text-white"
+                      }`}
                   >
                     <Icon className={`h-5 w-5 ${active ? "text-horizon-brand dark:text-white" : "text-horizon-gray dark:text-horizon-dark-gray"}`} />
                     <span className="text-[15px]">{item.name}</span>
@@ -211,7 +207,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="relative rounded-3xl bg-gradient-to-br from-[#868CFF] to-[#4318FF] p-6 text-center shadow-lg shadow-horizon-brand/30 overflow-hidden">
                 <div className="absolute -top-6 -left-6 w-16 h-16 bg-white/10 rounded-full blur-xl" />
                 <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-xl" />
-                
+
                 <div className="mx-auto w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-4 ring-4 ring-white/10 backdrop-blur-sm">
                   <span className="text-white font-bold text-xl">P</span>
                 </div>
