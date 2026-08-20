@@ -36,6 +36,7 @@ export default function ProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState<Partial<Product>>({
     name: "",
     brand: "",
@@ -109,6 +110,26 @@ export default function ProductsPage() {
     const newStorages = [...(formData.storages || [])];
     newStorages[idx] = { ...newStorages[idx], [field]: val };
     setFormData(p => ({ ...p, storages: newStorages }));
+  };
+
+  const handleFileUpload = async (file: File, callback: (url: string) => void) => {
+    setIsUploading(true);
+    try {
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadData
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      callback(data.url);
+    } catch (err) {
+      console.error(err);
+      toast.error('Lỗi khi tải ảnh lên');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -358,8 +379,24 @@ export default function ProductsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">URL Hình ảnh (Link ảnh online) *</label>
-                    <input required type="url" name="image" value={formData.image} onChange={handleInputChange} placeholder="https://..." className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
+                    <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">Hình ảnh Sản phẩm *</label>
+                    <div className="flex items-center gap-4 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl p-2 shadow-sm">
+                      {formData.image ? (
+                        <img src={formData.image} alt="Preview" className="w-12 h-12 rounded-lg object-contain bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-white/5 flex items-center justify-center text-horizon-gray text-xs text-center border border-dashed border-gray-200 dark:border-white/10">Ảnh</div>
+                      )}
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleFileUpload(e.target.files[0], (url) => setFormData(p => ({ ...p, image: url })));
+                          }
+                        }}
+                        className="flex-1 text-sm text-horizon-gray file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#F4F7FE] dark:file:bg-white/10 file:text-horizon-brand dark:file:text-white hover:file:bg-gray-100 dark:hover:file:bg-white/20 transition-colors cursor-pointer" 
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -382,7 +419,19 @@ export default function ProductsPage() {
                   {formData.colors?.map((c, i) => (
                     <div key={i} className="flex items-center gap-4 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-100 dark:border-white/10">
                       <input type="text" placeholder="Tên màu (VD: Đen nhám)" value={c.name} onChange={(e) => updateColor(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" required />
-                      <input type="color" value={c.hex} onChange={(e) => updateColor(i, 'hex', e.target.value)} className="w-10 h-10 rounded cursor-pointer shrink-0" />
+                      <input type="color" value={c.hex} onChange={(e) => updateColor(i, 'hex', e.target.value)} className="w-10 h-10 rounded cursor-pointer shrink-0" title="Mã màu" />
+                      
+                      <div className="relative shrink-0">
+                        <label className="flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/10 transition-colors overflow-hidden" title="Tải ảnh cho màu này">
+                          {c.image ? <img src={c.image} alt="Color img" className="w-full h-full object-contain" /> : <span className="text-[10px] font-bold text-horizon-gray">Ảnh</span>}
+                          <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              handleFileUpload(e.target.files[0], (url) => updateColor(i, 'image', url));
+                            }
+                          }} />
+                        </label>
+                      </div>
+
                       <button type="button" onClick={() => removeColor(i)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 p-2 rounded-lg transition-colors shrink-0">
                         <MinusCircle className="h-5 w-5" />
                       </button>
@@ -426,8 +475,8 @@ export default function ProductsPage() {
               <button type="button" onClick={closeModal} className="flex-1 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-horizon-dark dark:text-white font-bold py-3.5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/10 transition-colors shadow-sm text-base">
                 Hủy bỏ
               </button>
-              <button type="submit" onClick={handleSubmit} disabled={isSubmitting} className="flex-1 bg-horizon-brand text-white font-bold py-3.5 rounded-xl hover:bg-horizon-brand/90 transition-colors shadow-lg shadow-horizon-brand/30 disabled:opacity-70 text-base">
-                {isSubmitting ? "Đang lưu hệ thống..." : "Lưu Sản Phẩm & Biến thể"}
+              <button type="submit" onClick={handleSubmit} disabled={isSubmitting || isUploading} className="flex-1 bg-horizon-brand text-white font-bold py-3.5 rounded-xl hover:bg-horizon-brand/90 transition-colors shadow-lg shadow-horizon-brand/30 disabled:opacity-70 text-base">
+                {isSubmitting ? "Đang lưu hệ thống..." : isUploading ? "Đang tải ảnh..." : "Lưu Sản Phẩm & Biến thể"}
               </button>
             </div>
           </div>
