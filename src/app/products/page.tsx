@@ -374,21 +374,21 @@ export default function ProductsPage() {
                     {(product.originalPrice && product.originalPrice > product.basePrice) ? (
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-500 line-through font-medium">
-                          {p.originalPrice.toLocaleString('vi-VN')} đ
+                          {product.originalPrice.toLocaleString('vi-VN')} đ
                         </span>
-                        {p.discount && p.discount > 0 && (
+                        {product.discount && product.discount > 0 && (
                           <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold">
-                            -{p.discount}%
+                            -{product.discount}%
                           </span>
                         )}
                       </div>
                     ) : null}
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-red-500 text-lg">
-                        {p.basePrice.toLocaleString('vi-VN')} đ
+                        {product.basePrice.toLocaleString('vi-VN')} đ
                       </span>
                       <button className="bg-[#F4F7FE] dark:bg-white/10 text-horizon-brand dark:text-white text-xs font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
-                        {categoryMap[p.category] || p.category}
+                        {categoryMap[product.category] || product.category}
                       </button>
                     </div>
                   </div>
