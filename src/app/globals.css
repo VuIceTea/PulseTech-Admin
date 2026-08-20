@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:is(.dark, .dark *));
 
 :root {
   --background: #F4F7FE;
@@ -12,7 +12,7 @@
   --foreground: #FFFFFF;
 }
 
-@theme {
+@theme inline {
   --font-sans: "DM Sans", var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --color-horizon-bg: #F4F7FE;
   --color-horizon-card: #FFFFFF;
