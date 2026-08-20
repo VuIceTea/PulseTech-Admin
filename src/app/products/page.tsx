@@ -618,8 +618,11 @@ export default function ProductsPage() {
                   )}
                   {formData.colors?.map((c, i) => (
                     <div key={i} className="flex items-center gap-4 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-100 dark:border-white/10">
-                      <input type="text" placeholder="Tên màu (VD: Đen nhám)" value={c.name} onChange={(e) => updateColor(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" required />
-                      <input type="number" placeholder="Giá cộng thêm (VNĐ)" value={c.priceOffset || 0} onChange={(e) => updateColor(i, 'priceOffset', Number(e.target.value))} className="w-40 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none shrink-0" />
+                      <input type="text" placeholder="Tên màu (VD: Đen nhám)" value={c.name} onChange={(e) => updateColor(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none min-w-[120px]" required />
+                      <div className="flex-1 relative min-w-[150px]">
+                        <input type="number" placeholder="Cộng thêm giá" value={c.priceOffset || ''} onChange={(e) => updateColor(i, 'priceOffset', Number(e.target.value))} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-horizon-gray font-bold">+ VNĐ</span>
+                      </div>
                       <input type="color" value={c.hex} onChange={(e) => updateColor(i, 'hex', e.target.value)} className="w-10 h-10 rounded cursor-pointer shrink-0" title="Mã màu" />
                       
                       <div className="relative shrink-0">
@@ -771,100 +774,113 @@ export default function ProductsPage() {
           </div>
         </div>
       )}
-      {/* Detail Modal */}
+      {/* Premium Detail Modal */}
       {viewingProduct && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setViewingProduct(null)}>
-          <div className="bg-white dark:bg-horizon-dark-bg w-full max-w-2xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/5 shrink-0">
-              <h2 className="text-xl font-bold text-black dark:text-white">Chi tiết sản phẩm</h2>
-              <button onClick={() => setViewingProduct(null)} className="p-2 bg-white dark:bg-white/10 rounded-full text-horizon-gray hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 transition-colors cursor-pointer shadow-sm">
-                <X className="h-5 w-5" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={() => setViewingProduct(null)}>
+          <div className="bg-white dark:bg-horizon-dark-bg w-full max-w-4xl max-h-[90vh] rounded-[24px] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
+            <div className="absolute top-4 right-4 z-50">
+              <button onClick={() => setViewingProduct(null)} className="p-2 bg-white/80 dark:bg-black/50 backdrop-blur-sm rounded-full text-gray-800 dark:text-white hover:text-red-500 transition-colors shadow-sm cursor-pointer">
+                <X className="h-6 w-6" />
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto space-y-6">
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="w-full md:w-1/3 bg-gray-50 dark:bg-white/5 rounded-2xl p-4 flex items-center justify-center border border-gray-100 dark:border-white/10 h-48 md:h-auto shrink-0">
-                  {viewingProduct.image ? (
-                    <img src={getImageUrl(viewingProduct.imageUrl || viewingProduct.image)} alt={viewingProduct.name} className="w-full h-full object-contain" />
-                  ) : (
-                    <div className="w-32 h-32 bg-gradient-to-tr from-[#868CFF] to-[#4318FF] rounded-lg shadow-lg rotate-12" />
-                  )}
-                </div>
-                <div className="w-full md:w-2/3 space-y-4">
-                  <h3 className="text-2xl font-bold text-black dark:text-white">{viewingProduct.name}</h3>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-3 py-1 bg-gray-100 dark:bg-white/10 text-horizon-gray dark:text-white rounded-full text-sm font-bold">{viewingProduct.brand}</span>
-                    <span className="px-3 py-1 bg-horizon-brand/10 text-horizon-brand rounded-full text-sm font-bold">{categoryMap[viewingProduct.category] || viewingProduct.category}</span>
-                    {viewingProduct.stock === 0 && (
-                      <span className="px-3 py-1 bg-red-100 text-red-600 rounded-full text-sm font-bold">Hết hàng</span>
-                    )}
+            <div className="flex flex-col md:flex-row h-full overflow-y-auto">
+              {/* Left Image Section - Sticky */}
+              <div className="w-full md:w-[45%] bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10 p-8 flex items-center justify-center relative md:sticky top-0 min-h-[300px] md:h-auto shrink-0">
+                {viewingProduct.stock === 0 && (
+                  <div className="absolute top-6 left-6 bg-red-500 text-white font-bold px-3 py-1.5 rounded-lg text-sm shadow-lg z-10 animate-pulse">
+                    ĐÃ HẾT HÀNG
                   </div>
-                  <div className="flex flex-col mt-4 p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10">
-                    <div className="flex items-baseline gap-3">
-                      <span className="text-3xl font-extrabold text-red-500">{viewingProduct.basePrice.toLocaleString('vi-VN')} đ</span>
-                      {viewingProduct.originalPrice && viewingProduct.originalPrice > viewingProduct.basePrice ? (
-                        <span className="text-lg text-gray-400 line-through font-medium">{viewingProduct.originalPrice.toLocaleString('vi-VN')} đ</span>
-                      ) : null}
+                )}
+                {viewingProduct.image ? (
+                  <img src={getImageUrl(viewingProduct.imageUrl || viewingProduct.image)} alt={viewingProduct.name} className="w-full h-full object-contain filter drop-shadow-2xl hover:scale-105 transition-transform duration-500" />
+                ) : (
+                  <div className="w-48 h-48 bg-gradient-to-tr from-[#868CFF] to-[#4318FF] rounded-[30px] shadow-2xl rotate-12" />
+                )}
+              </div>
+              
+              {/* Right Content Section */}
+              <div className="w-full md:w-[55%] p-8 md:p-10 space-y-8 bg-white dark:bg-horizon-dark-bg">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <span className="px-3 py-1 bg-[#F4F7FE] dark:bg-white/10 text-horizon-brand dark:text-white rounded-full text-xs font-bold uppercase tracking-wider">{categoryMap[viewingProduct.category] || viewingProduct.category}</span>
+                    <span className="px-3 py-1 bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 rounded-full text-xs font-bold uppercase tracking-wider">{viewingProduct.brand}</span>
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-extrabold text-black dark:text-white leading-tight mb-6">
+                    {viewingProduct.name}
+                  </h2>
+                  
+                  <div className="flex items-end gap-4 p-5 bg-gradient-to-r from-gray-50 to-white dark:from-white/5 dark:to-transparent border border-gray-100 dark:border-white/10 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+                    <div>
+                      {viewingProduct.originalPrice && viewingProduct.originalPrice > viewingProduct.basePrice && (
+                        <div className="text-gray-400 dark:text-gray-500 line-through font-medium text-base mb-1">
+                          {viewingProduct.originalPrice.toLocaleString('vi-VN')} đ
+                        </div>
+                      )}
+                      <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">
+                        {viewingProduct.basePrice.toLocaleString('vi-VN')} <span className="text-2xl text-red-500">đ</span>
+                      </div>
                     </div>
                     {viewingProduct.discount && viewingProduct.discount > 0 ? (
-                      <span className="text-sm font-bold text-red-500 bg-red-100 px-2 py-1 rounded w-max mt-2">Giảm {viewingProduct.discount}%</span>
+                      <div className="mb-2 px-3 py-1 bg-red-100 text-red-600 font-bold rounded-lg text-sm shadow-sm">
+                        -{viewingProduct.discount}%
+                      </div>
                     ) : null}
                   </div>
-                  <p className="text-sm font-medium text-horizon-gray">Tồn kho: <span className="font-bold text-black dark:text-white">{viewingProduct.stock} sản phẩm</span></p>
+                  <p className="mt-4 text-sm font-medium text-gray-500 dark:text-gray-400">Hiện đang còn <span className="font-bold text-black dark:text-white text-base">{viewingProduct.stock}</span> sản phẩm trong kho</p>
                 </div>
-              </div>
 
-              {((viewingProduct.colors && viewingProduct.colors.length > 0) || (viewingProduct.storages && viewingProduct.storages.length > 0)) && (
-                <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-white/10">
-                  <h4 className="text-lg font-bold text-black dark:text-white border-l-4 border-horizon-brand pl-2">Biến thể</h4>
-                  
-                  {viewingProduct.colors && viewingProduct.colors.length > 0 && (
-                    <div>
-                      <p className="text-sm font-bold text-horizon-gray mb-2">Màu sắc</p>
-                      <div className="flex flex-wrap gap-2">
-                        {viewingProduct.colors.map((c, i) => (
-                          <div key={i} className="flex items-center gap-2 bg-white dark:bg-horizon-dark-card border border-gray-200 dark:border-white/10 px-3 py-2 rounded-xl text-sm shadow-sm">
-                            <span className="w-5 h-5 rounded-full border border-gray-200 shadow-sm" style={{ backgroundColor: c.hex }}></span>
-                            <span className="font-bold text-black dark:text-white">{c.name}</span>
-                            {c.priceOffset ? <span className="text-red-500 font-bold ml-1">(+{c.priceOffset.toLocaleString('vi-VN')} đ)</span> : null}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {viewingProduct.storages && viewingProduct.storages.length > 0 && (
-                    <div className="mt-4">
-                      <p className="text-sm font-bold text-horizon-gray mb-2">Dung lượng</p>
-                      <div className="flex flex-wrap gap-2">
-                        {viewingProduct.storages.map((s, i) => (
-                          <div key={i} className="flex items-center gap-2 bg-white dark:bg-horizon-dark-card border border-gray-200 dark:border-white/10 px-3 py-2 rounded-xl text-sm shadow-sm">
-                            <span className="font-bold text-black dark:text-white">{s.name}</span>
-                            {s.priceOffset ? <span className="text-red-500 font-bold ml-1">(+{s.priceOffset.toLocaleString('vi-VN')} đ)</span> : null}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-              
-              {viewingProduct.specs && Object.keys(viewingProduct.specs).length > 0 && (
-                <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-white/10">
-                  <h4 className="text-lg font-bold text-black dark:text-white border-l-4 border-horizon-brand pl-2">Thông số kỹ thuật</h4>
-                  <div className="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-white/5 p-4 rounded-2xl border border-gray-100 dark:border-white/10">
-                    {Object.entries(viewingProduct.specs).map(([key, val]) => (
-                      val ? (
-                        <div key={key} className="flex flex-col">
-                          <span className="text-xs text-horizon-gray capitalize">{key}</span>
-                          <span className="text-sm font-medium text-black dark:text-white">{val}</span>
+                {((viewingProduct.colors && viewingProduct.colors.length > 0) || (viewingProduct.storages && viewingProduct.storages.length > 0)) && (
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-black dark:text-white border-b border-gray-100 dark:border-white/10 pb-3">Tùy chọn phiên bản</h3>
+                    
+                    {viewingProduct.colors && viewingProduct.colors.length > 0 && (
+                      <div>
+                        <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Màu sắc</p>
+                        <div className="flex flex-wrap gap-3">
+                          {viewingProduct.colors.map((c, i) => (
+                            <div key={i} className="flex flex-col items-center bg-white dark:bg-[#0B1437] border-2 border-gray-100 dark:border-white/10 p-2 rounded-xl min-w-[90px] hover:border-horizon-brand dark:hover:border-horizon-brand transition-colors cursor-pointer group">
+                              <span className="w-8 h-8 rounded-full border border-gray-200 shadow-sm mb-2 group-hover:scale-110 transition-transform" style={{ backgroundColor: c.hex }}></span>
+                              <span className="font-bold text-xs text-black dark:text-white text-center">{c.name}</span>
+                              {c.priceOffset ? <span className="text-[10px] text-red-500 font-bold mt-1">+{c.priceOffset.toLocaleString('vi-VN')}đ</span> : null}
+                            </div>
+                          ))}
                         </div>
-                      ) : null
-                    ))}
+                      </div>
+                    )}
+
+                    {viewingProduct.storages && viewingProduct.storages.length > 0 && (
+                      <div>
+                        <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Dung lượng / Phiên bản</p>
+                        <div className="flex flex-wrap gap-3">
+                          {viewingProduct.storages.map((s, i) => (
+                            <div key={i} className="flex flex-col justify-center bg-white dark:bg-[#0B1437] border-2 border-gray-100 dark:border-white/10 px-4 py-3 rounded-xl hover:border-horizon-brand dark:hover:border-horizon-brand transition-colors cursor-pointer text-center min-w-[100px]">
+                              <span className="font-bold text-sm text-black dark:text-white">{s.name}</span>
+                              {s.priceOffset ? <span className="text-xs text-red-500 font-bold mt-1">+{s.priceOffset.toLocaleString('vi-VN')}đ</span> : null}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                )}
+                
+                {viewingProduct.specs && Object.keys(viewingProduct.specs).length > 0 && (
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-black dark:text-white border-b border-gray-100 dark:border-white/10 pb-3">Thông số kỹ thuật</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                      {Object.entries(viewingProduct.specs).map(([key, val]) => (
+                        val ? (
+                          <div key={key} className="flex flex-col py-2 border-b border-gray-50 dark:border-white/5">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 capitalize mb-1">{key}</span>
+                            <span className="text-sm font-bold text-black dark:text-white">{val}</span>
+                          </div>
+                        ) : null
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
