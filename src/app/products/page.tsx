@@ -41,6 +41,8 @@ interface Product {
   brand: string;
   category: string;
   basePrice: number;
+  originalPrice?: number;
+  discount?: number;
   stock: number;
   description?: string;
   image?: string;
@@ -82,6 +84,8 @@ export default function ProductsPage() {
     brand: "",
     category: "",
     basePrice: 0,
+    originalPrice: 0,
+    discount: 0,
     stock: 0,
     image: "",
     description: "",
@@ -110,7 +114,7 @@ export default function ProductsPage() {
 
   const openAddModal = () => {
     setEditingProduct(null);
-    setFormData({ name: "", brand: "", category: "phone", basePrice: 0, stock: 0, image: "", description: "", colors: [], storages: [], specs: {} });
+    setFormData({ name: "", brand: "", category: "phone", basePrice: 0, originalPrice: 0, discount: 0, stock: 0, image: "", description: "", colors: [], storages: [], specs: {} });
     setIsModalOpen(true);
   };
 
@@ -134,7 +138,7 @@ export default function ProductsPage() {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'basePrice' || name === 'stock' ? Number(value) : value
+      [name]: name === 'basePrice' || name === 'originalPrice' || name === 'discount' || name === 'stock' ? Number(value) : value
     }));
   };
 
@@ -252,7 +256,7 @@ export default function ProductsPage() {
               Tham gia vào thế giới công nghệ. Bắt đầu tìm kiếm những sản phẩm mới nhất hoặc quản lý kho hàng của riêng bạn!
             </p>
             <div className="flex items-center gap-4">
-              <button onClick={openAddModal} className="flex items-center gap-2 bg-white text-horizon-dark hover:bg-gray-50 transition-colors font-bold text-sm px-6 py-2.5 rounded-xl shadow-lg">
+              <button onClick={openAddModal} className="flex items-center gap-2 bg-white text-black hover:bg-gray-50 transition-colors font-bold text-sm px-6 py-2.5 rounded-xl shadow-lg">
                 <Plus className="h-4 w-4" /> Tạo Sản Phẩm
               </button>
             </div>
@@ -269,7 +273,7 @@ export default function ProductsPage() {
         {/* Trending Section */}
         <div>
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
-            <h2 className="text-2xl font-bold text-horizon-dark dark:text-white">Sản phẩm Nổi bật</h2>
+            <h2 className="text-2xl font-bold text-black dark:text-white">Sản phẩm Nổi bật</h2>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
               <div className="relative w-full sm:w-64">
                 <input 
@@ -277,15 +281,24 @@ export default function ProductsPage() {
                   placeholder="Tìm kiếm sản phẩm, hãng..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white dark:bg-horizon-dark-card border border-gray-100 dark:border-white/10 rounded-full px-4 py-2 text-sm text-horizon-dark dark:text-white outline-none focus:ring-2 focus:ring-horizon-brand"
+                  className="w-full bg-white dark:bg-horizon-dark-card border border-gray-100 dark:border-white/10 rounded-full px-4 py-2 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-horizon-brand"
                 />
               </div>
-              <div className="flex items-center gap-4 text-sm font-medium text-horizon-gray dark:text-white shrink-0 overflow-x-auto pb-1 sm:pb-0">
-                <button onClick={() => setSelectedFilter('all')} className={`${selectedFilter === 'all' ? 'text-horizon-brand font-bold' : 'hover:text-horizon-dark dark:hover:text-white transition-colors'}`}>Tất cả</button>
-                <button onClick={() => setSelectedFilter('phone')} className={`${selectedFilter === 'phone' ? 'text-horizon-brand font-bold' : 'hover:text-horizon-dark dark:hover:text-white transition-colors'}`}>Điện thoại</button>
-                <button onClick={() => setSelectedFilter('tablet')} className={`${selectedFilter === 'tablet' ? 'text-horizon-brand font-bold' : 'hover:text-horizon-dark dark:hover:text-white transition-colors'}`}>Tablet</button>
-                <button onClick={() => setSelectedFilter('laptop')} className={`${selectedFilter === 'laptop' ? 'text-horizon-brand font-bold' : 'hover:text-horizon-dark dark:hover:text-white transition-colors'}`}>Laptop</button>
-                <button onClick={() => setSelectedFilter('accessory')} className={`${selectedFilter === 'accessory' ? 'text-horizon-brand font-bold' : 'hover:text-horizon-dark dark:hover:text-white transition-colors'}`}>Phụ kiện</button>
+              <div className="relative flex items-center bg-gray-100 dark:bg-white/5 p-1 rounded-full overflow-hidden text-sm font-medium shrink-0">
+                {/* Sliding indicator */}
+                <div 
+                  className="absolute top-1 bottom-1 bg-white dark:bg-horizon-dark-card rounded-full shadow-sm transition-all duration-300 ease-out"
+                  style={{
+                    width: selectedFilter === 'all' ? '60px' : selectedFilter === 'phone' ? '90px' : selectedFilter === 'tablet' ? '65px' : selectedFilter === 'laptop' ? '70px' : '85px',
+                    left: selectedFilter === 'all' ? '4px' : selectedFilter === 'phone' ? '64px' : selectedFilter === 'tablet' ? '154px' : selectedFilter === 'laptop' ? '219px' : '289px'
+                  }}
+                />
+                
+                <button onClick={() => setSelectedFilter('all')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[60px] ${selectedFilter === 'all' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Tất cả</button>
+                <button onClick={() => setSelectedFilter('phone')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[90px] ${selectedFilter === 'phone' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Điện thoại</button>
+                <button onClick={() => setSelectedFilter('tablet')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[65px] ${selectedFilter === 'tablet' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Tablet</button>
+                <button onClick={() => setSelectedFilter('laptop')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[70px] ${selectedFilter === 'laptop' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Laptop</button>
+                <button onClick={() => setSelectedFilter('accessory')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[85px] ${selectedFilter === 'accessory' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Phụ kiện</button>
               </div>
             </div>
           </div>
@@ -308,7 +321,7 @@ export default function ProductsPage() {
               
               if (filteredProducts.length === 0) {
                 return (
-                  <div className="col-span-full text-center py-12 text-horizon-gray dark:text-horizon-dark-gray font-medium">
+                  <div className="col-span-full text-center py-12 text-horizon-gray dark:text-black-gray font-medium">
                     Không tìm thấy sản phẩm nào!
                   </div>
                 );
@@ -332,7 +345,7 @@ export default function ProductsPage() {
                     
                     {/* Action overlay */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 z-20">
-                      <button onClick={() => openEditModal(product)} className="flex items-center gap-2 bg-white text-horizon-dark px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100">
+                      <button onClick={() => openEditModal(product)} className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100">
                         <Edit2 className="h-4 w-4" /> Sửa
                       </button>
                       <button onClick={() => handleDelete(product.id)} className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-600">
@@ -343,10 +356,10 @@ export default function ProductsPage() {
                   
                   <div className="flex items-start justify-between">
                     <div className="w-full">
-                      <h3 className="text-lg font-bold text-horizon-dark dark:text-white mb-1 truncate">
+                      <h3 className="text-lg font-bold text-black dark:text-white mb-1 truncate">
                         {product.name}
                       </h3>
-                      <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray truncate">
+                      <p className="text-sm font-medium text-horizon-gray dark:text-black-gray truncate">
                         Bởi {product.brand} • Kho: {product.stock}
                       </p>
                     </div>
@@ -371,7 +384,7 @@ export default function ProductsPage() {
       <div className="w-full xl:w-[350px] flex flex-col gap-5 shrink-0">
         <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex-1">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-bold text-horizon-dark dark:text-white">Kho hàng Top</h2>
+            <h2 className="text-lg font-bold text-black dark:text-white">Kho hàng Top</h2>
             <button className="text-horizon-brand bg-[#F4F7FE] dark:bg-horizon-dark-bg px-4 py-1.5 rounded-full text-xs font-bold hover:bg-[#E9EDF7] transition-colors">
               Xem tất cả
             </button>
@@ -379,17 +392,22 @@ export default function ProductsPage() {
 
           <div className="space-y-4">
             {[...products].sort((a, b) => a.stock - b.stock).slice(0, 8).map((p, i) => (
-              <div key={p.id || i} className="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
-                <div className="flex items-center gap-3 min-w-0">
+              <div key={p.id || i} className="relative flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+                {i < 3 && (
+                  <div className="absolute -top-2 -left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm z-10 flex items-center gap-1">
+                    <span>🔥</span> Top {i + 1} bán chạy
+                  </div>
+                )}
+                <div className="flex items-center gap-3 min-w-0 pt-1">
                   <div className="w-12 h-12 rounded-xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center p-1">
                     {p.image ? <img src={getImageUrl(p.image)} alt={p.name} className="w-full h-full object-contain" /> : <div className="w-full h-full bg-gradient-to-br from-[#868CFF] to-[#4318FF]" />}
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm font-bold text-horizon-dark dark:text-white truncate">{p.name}</h3>
-                    <p className="text-xs font-medium text-horizon-gray dark:text-horizon-dark-gray truncate">{p.brand}</p>
+                    <h3 className="text-sm font-bold text-black dark:text-white truncate">{p.name}</h3>
+                    <p className="text-xs font-medium text-horizon-gray dark:text-black-gray truncate">{p.brand}</p>
                   </div>
                 </div>
-                <div className="text-sm font-bold text-horizon-dark dark:text-white shrink-0 ml-4 text-right">
+                <div className="text-sm font-bold text-black dark:text-white shrink-0 ml-4 text-right">
                   {p.stock} <span className="block text-horizon-gray text-xs">tồn kho</span>
                 </div>
               </div>
@@ -404,7 +422,7 @@ export default function ProductsPage() {
           <div className="bg-white dark:bg-horizon-dark-card w-full max-w-3xl rounded-[24px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 my-auto">
             <div className="flex items-center justify-between p-6 md:p-8 border-b border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-black/20">
               <div>
-                <h2 className="text-2xl font-extrabold text-horizon-dark dark:text-white">
+                <h2 className="text-2xl font-extrabold text-black dark:text-white">
                   {editingProduct ? "Cập nhật Sản Phẩm" : "Thêm Sản Phẩm Mới"}
                 </h2>
                 <p className="text-sm text-horizon-gray mt-1">Điền đầy đủ các thông tin và biến thể bên dưới</p>
@@ -418,20 +436,20 @@ export default function ProductsPage() {
               
               {/* Section: Thông tin chung */}
               <div>
-                <h3 className="text-lg font-bold text-horizon-dark dark:text-white mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-bold text-black dark:text-white mb-4 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-horizon-brand text-white flex items-center justify-center text-sm">1</span> Thông tin cơ bản
                 </h3>
                 <div className="space-y-5 bg-gray-50 dark:bg-white/5 p-5 rounded-2xl">
                   <div>
-                    <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">
+                    <label className="block text-sm font-bold text-black dark:text-white mb-2">
                       Tên sản phẩm <span className="text-red-500">*</span>
                     </label>
-                    <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
+                    <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="relative">
-                      <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">
+                      <label className="block text-sm font-bold text-black dark:text-white mb-2">
                         Hãng sản xuất <span className="text-red-500">*</span>
                       </label>
                       <input 
@@ -445,7 +463,7 @@ export default function ProductsPage() {
                         }} 
                         onFocus={() => setShowBrandSuggestions(true)}
                         onBlur={() => setTimeout(() => setShowBrandSuggestions(false), 200)}
-                        className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" 
+                        className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" 
                         autoComplete="off"
                       />
                       {showBrandSuggestions && (() => {
@@ -457,7 +475,7 @@ export default function ProductsPage() {
                               {filteredBrands.map((b, idx) => (
                                 <div 
                                   key={idx} 
-                                  className="px-4 py-2 text-sm text-horizon-dark dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors"
+                                  className="px-4 py-2 text-sm text-black dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors"
                                   onClick={() => handleBrandSelect(b)}
                                 >
                                   {b}
@@ -470,10 +488,10 @@ export default function ProductsPage() {
                       })()}
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">
+                      <label className="block text-sm font-bold text-black dark:text-white mb-2">
                         Danh mục <span className="text-red-500">*</span>
                       </label>
-                      <select required name="category" value={formData.category} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm">
+                      <select required name="category" value={formData.category} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm">
                         <option value="phone">Điện thoại</option>
                         <option value="tablet">Máy tính bảng</option>
                         <option value="laptop">Laptop</option>
@@ -483,23 +501,35 @@ export default function ProductsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div>
+                      <label className="block text-sm font-bold text-red-500 mb-2">
                         Giá bán cơ bản (VNĐ) <span className="text-red-500">*</span>
                       </label>
                       <input required type="number" min="0" name="basePrice" value={formData.basePrice} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-mono text-horizon-brand font-bold outline-none focus:border-horizon-brand transition-colors shadow-sm" />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">
+                      <label className="block text-sm font-bold text-black dark:text-white mb-2">
+                        Giá gốc
+                      </label>
+                      <input type="number" min="0" name="originalPrice" value={formData.originalPrice} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-mono text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-black dark:text-white mb-2">
+                        Giảm giá (%)
+                      </label>
+                      <input type="number" min="0" max="100" name="discount" value={formData.discount} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-bold text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-black dark:text-white mb-2">
                         Số lượng Tồn kho <span className="text-red-500">*</span>
                       </label>
-                      <input required type="number" min="0" name="stock" value={formData.stock} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-bold text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
+                      <input required type="number" min="0" name="stock" value={formData.stock} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-bold text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">
+                    <label className="block text-sm font-bold text-black dark:text-white mb-2">
                       Hình ảnh Sản phẩm <span className="text-red-500">*</span>
                     </label>
                     <div className="flex items-center gap-4 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl p-2 shadow-sm">
@@ -526,7 +556,7 @@ export default function ProductsPage() {
               {/* Section: Biến thể Màu sắc */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-horizon-dark dark:text-white flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-black dark:text-white flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-[#05CD99] text-white flex items-center justify-center text-sm">2</span> Biến thể Màu sắc
                   </h3>
                   <button type="button" onClick={addColor} className="flex items-center gap-1 text-sm font-bold text-[#05CD99] hover:underline">
@@ -540,7 +570,7 @@ export default function ProductsPage() {
                   )}
                   {formData.colors?.map((c, i) => (
                     <div key={i} className="flex items-center gap-4 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-100 dark:border-white/10">
-                      <input type="text" placeholder="Tên màu (VD: Đen nhám)" value={c.name} onChange={(e) => updateColor(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" required />
+                      <input type="text" placeholder="Tên màu (VD: Đen nhám)" value={c.name} onChange={(e) => updateColor(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" required />
                       <input type="color" value={c.hex} onChange={(e) => updateColor(i, 'hex', e.target.value)} className="w-10 h-10 rounded cursor-pointer shrink-0" title="Mã màu" />
                       
                       <div className="relative shrink-0">
@@ -565,7 +595,7 @@ export default function ProductsPage() {
               {/* Section: Biến thể Dung lượng */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-horizon-dark dark:text-white flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-black dark:text-white flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm">3</span> Biến thể Dung lượng (Tùy chọn)
                   </h3>
                   <button type="button" onClick={addStorage} className="flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline">
@@ -579,9 +609,9 @@ export default function ProductsPage() {
                   )}
                   {formData.storages?.map((s, i) => (
                     <div key={i} className="flex items-center gap-4 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-100 dark:border-white/10">
-                      <input type="text" placeholder="Tên (VD: 256GB)" value={s.name} onChange={(e) => updateStorage(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" required />
+                      <input type="text" placeholder="Tên (VD: 256GB)" value={s.name} onChange={(e) => updateStorage(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" required />
                       <div className="flex-1 relative">
-                        <input type="number" placeholder="Cộng thêm giá (đ)" value={s.priceOffset} onChange={(e) => updateStorage(i, 'priceOffset', Number(e.target.value))} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-horizon-dark dark:text-white outline-none" required />
+                        <input type="number" placeholder="Cộng thêm giá (đ)" value={s.priceOffset} onChange={(e) => updateStorage(i, 'priceOffset', Number(e.target.value))} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" required />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-horizon-gray font-bold">+ VNĐ</span>
                       </div>
                       <button type="button" onClick={() => removeStorage(i)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 p-2 rounded-lg transition-colors shrink-0">
@@ -595,7 +625,7 @@ export default function ProductsPage() {
               {/* Section: Thông số kỹ thuật */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-horizon-dark dark:text-white flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-black dark:text-white flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center text-sm">4</span> Thông số kỹ thuật (Tùy chọn)
                   </h3>
                 </div>
@@ -605,36 +635,36 @@ export default function ProductsPage() {
                   {(formData.category === 'phone' || formData.category === 'tablet' || formData.category === 'laptop') && (
                     <>
                       <div>
-                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Màn hình (Screen)</label>
-                        <input type="text" value={formData.specs?.screen || ""} onChange={(e) => handleSpecChange('screen', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Màn hình (Screen)</label>
+                        <input type="text" value={formData.specs?.screen || ""} onChange={(e) => handleSpecChange('screen', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Hệ điều hành (OS)</label>
-                        <input type="text" value={formData.specs?.os || ""} onChange={(e) => handleSpecChange('os', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Hệ điều hành (OS)</label>
+                        <input type="text" value={formData.specs?.os || ""} onChange={(e) => handleSpecChange('os', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Camera chính</label>
-                        <input type="text" value={formData.specs?.camera || ""} onChange={(e) => handleSpecChange('camera', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Camera chính</label>
+                        <input type="text" value={formData.specs?.camera || ""} onChange={(e) => handleSpecChange('camera', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Camera trước</label>
-                        <input type="text" value={formData.specs?.frontCamera || ""} onChange={(e) => handleSpecChange('frontCamera', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Camera trước</label>
+                        <input type="text" value={formData.specs?.frontCamera || ""} onChange={(e) => handleSpecChange('frontCamera', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Vi xử lý (CPU)</label>
-                        <input type="text" value={formData.specs?.cpu || ""} onChange={(e) => handleSpecChange('cpu', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Vi xử lý (CPU)</label>
+                        <input type="text" value={formData.specs?.cpu || ""} onChange={(e) => handleSpecChange('cpu', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">RAM</label>
-                        <input type="text" value={formData.specs?.ram || ""} onChange={(e) => handleSpecChange('ram', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">RAM</label>
+                        <input type="text" value={formData.specs?.ram || ""} onChange={(e) => handleSpecChange('ram', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Lưu trữ gốc (Storage)</label>
-                        <input type="text" value={formData.specs?.storage || ""} onChange={(e) => handleSpecChange('storage', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Lưu trữ gốc (Storage)</label>
+                        <input type="text" value={formData.specs?.storage || ""} onChange={(e) => handleSpecChange('storage', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Pin (Battery)</label>
-                        <input type="text" value={formData.specs?.battery || ""} onChange={(e) => handleSpecChange('battery', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Pin (Battery)</label>
+                        <input type="text" value={formData.specs?.battery || ""} onChange={(e) => handleSpecChange('battery', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                     </>
                   )}
@@ -642,20 +672,20 @@ export default function ProductsPage() {
                   {formData.category === 'accessory' && (
                     <>
                       <div>
-                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Loại phụ kiện</label>
-                        <input type="text" value={formData.specs?.accessoryType || ""} onChange={(e) => handleSpecChange('accessoryType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Loại phụ kiện</label>
+                        <input type="text" value={formData.specs?.accessoryType || ""} onChange={(e) => handleSpecChange('accessoryType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Chuẩn kết nối</label>
-                        <input type="text" value={formData.specs?.connectionType || ""} onChange={(e) => handleSpecChange('connectionType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Chuẩn kết nối</label>
+                        <input type="text" value={formData.specs?.connectionType || ""} onChange={(e) => handleSpecChange('connectionType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Công suất sạc</label>
-                        <input type="text" value={formData.specs?.chargingPower || ""} onChange={(e) => handleSpecChange('chargingPower', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Công suất sạc</label>
+                        <input type="text" value={formData.specs?.chargingPower || ""} onChange={(e) => handleSpecChange('chargingPower', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Chất liệu ốp</label>
-                        <input type="text" value={formData.specs?.caseMaterial || ""} onChange={(e) => handleSpecChange('caseMaterial', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Chất liệu ốp</label>
+                        <input type="text" value={formData.specs?.caseMaterial || ""} onChange={(e) => handleSpecChange('caseMaterial', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                     </>
                   )}
@@ -663,16 +693,16 @@ export default function ProductsPage() {
                   {formData.category === 'audio' && (
                     <>
                       <div>
-                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Loại tai nghe</label>
-                        <input type="text" value={formData.specs?.headphoneType || ""} onChange={(e) => handleSpecChange('headphoneType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Loại tai nghe</label>
+                        <input type="text" value={formData.specs?.headphoneType || ""} onChange={(e) => handleSpecChange('headphoneType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Tính năng âm thanh</label>
-                        <input type="text" value={formData.specs?.audioFeature || ""} onChange={(e) => handleSpecChange('audioFeature', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Tính năng âm thanh</label>
+                        <input type="text" value={formData.specs?.audioFeature || ""} onChange={(e) => handleSpecChange('audioFeature', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Thời lượng pin</label>
-                        <input type="text" value={formData.specs?.battery || ""} onChange={(e) => handleSpecChange('battery', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Thời lượng pin</label>
+                        <input type="text" value={formData.specs?.battery || ""} onChange={(e) => handleSpecChange('battery', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                     </>
                   )}
@@ -682,7 +712,7 @@ export default function ProductsPage() {
             </form>
             
             <div className="p-6 md:p-8 border-t border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-black/20 flex gap-4">
-              <button type="button" onClick={closeModal} className="flex-1 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-horizon-dark dark:text-white font-bold py-3.5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/10 transition-colors shadow-sm text-base">
+              <button type="button" onClick={closeModal} className="flex-1 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-black dark:text-white font-bold py-3.5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/10 transition-colors shadow-sm text-base">
                 Hủy bỏ
               </button>
               <button type="submit" onClick={handleSubmit} disabled={isSubmitting || isUploading} className="flex-1 bg-horizon-brand text-white font-bold py-3.5 rounded-xl hover:bg-horizon-brand/90 transition-colors shadow-lg shadow-horizon-brand/30 disabled:opacity-70 text-base">
