@@ -15,6 +15,26 @@ interface StorageVariant {
   priceOffset: number;
 }
 
+interface ProductSpec {
+  screen?: string;
+  os?: string;
+  camera?: string;
+  frontCamera?: string;
+  cpu?: string;
+  ram?: string;
+  storage?: string;
+  battery?: string;
+  accessoryType?: string;
+  headphoneType?: string;
+  audioFeature?: string;
+  connectionType?: string;
+  cableLength?: string;
+  chargingPower?: string;
+  chargingPorts?: string;
+  caseMaterial?: string;
+  caseFeature?: string;
+}
+
 interface Product {
   id: string;
   name: string;
@@ -26,11 +46,18 @@ interface Product {
   image?: string;
   colors: ColorVariant[];
   storages: StorageVariant[];
+  specs?: ProductSpec;
 }
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const getImageUrl = (url?: string) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `http://localhost:3000${url.startsWith('/') ? '' : '/'}${url}`;
+  };
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,7 +73,8 @@ export default function ProductsPage() {
     image: "",
     description: "",
     colors: [],
-    storages: []
+    storages: [],
+    specs: {}
   });
 
   const loadProducts = () => {
@@ -69,7 +97,7 @@ export default function ProductsPage() {
 
   const openAddModal = () => {
     setEditingProduct(null);
-    setFormData({ name: "", brand: "", category: "phone", basePrice: 0, stock: 0, image: "", description: "", colors: [], storages: [] });
+    setFormData({ name: "", brand: "", category: "phone", basePrice: 0, stock: 0, image: "", description: "", colors: [], storages: [], specs: {} });
     setIsModalOpen(true);
   };
 
@@ -78,7 +106,8 @@ export default function ProductsPage() {
     setFormData({ 
       ...product,
       colors: product.colors || [],
-      storages: product.storages || []
+      storages: product.storages || [],
+      specs: product.specs || {}
     });
     setIsModalOpen(true);
   };
@@ -93,6 +122,13 @@ export default function ProductsPage() {
     setFormData(prev => ({
       ...prev,
       [name]: name === 'basePrice' || name === 'stock' ? Number(value) : value
+    }));
+  };
+
+  const handleSpecChange = (field: keyof ProductSpec, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      specs: { ...(prev.specs || {}), [field]: value }
     }));
   };
 
@@ -237,7 +273,7 @@ export default function ProductsPage() {
                 <div key={product.id} className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] group hover:-translate-y-1 transition-transform relative">
                   <div className="w-full h-48 rounded-xl bg-gray-50 dark:bg-horizon-dark-bg mb-4 relative overflow-hidden flex items-center justify-center p-2">
                     {product.image ? (
-                      <img src={product.image} alt={product.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
+                      <img src={getImageUrl(product.imageUrl || product.image)} alt={product.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
                     ) : (
                       <div className="w-32 h-32 bg-gradient-to-tr from-[#868CFF] to-[#4318FF] rounded-lg shadow-lg rotate-12 group-hover:scale-110 transition-transform duration-500" />
                     )}
@@ -305,7 +341,7 @@ export default function ProductsPage() {
               <div key={p.id || i} className="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-12 h-12 rounded-xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center p-1">
-                    {p.image ? <img src={p.image} alt={p.name} className="w-full h-full object-contain" /> : <div className="w-full h-full bg-gradient-to-br from-[#868CFF] to-[#4318FF]" />}
+                    {p.image ? <img src={getImageUrl(p.image)} alt={p.name} className="w-full h-full object-contain" /> : <div className="w-full h-full bg-gradient-to-br from-[#868CFF] to-[#4318FF]" />}
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-sm font-bold text-horizon-dark dark:text-white truncate">{p.name}</h3>
@@ -382,7 +418,7 @@ export default function ProductsPage() {
                     <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">Hình ảnh Sản phẩm *</label>
                     <div className="flex items-center gap-4 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl p-2 shadow-sm">
                       {formData.image ? (
-                        <img src={formData.image} alt="Preview" className="w-12 h-12 rounded-lg object-contain bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10" />
+                        <img src={getImageUrl(formData.image)} alt="Preview" className="w-12 h-12 rounded-lg object-contain bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10" />
                       ) : (
                         <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-white/5 flex items-center justify-center text-horizon-gray text-xs text-center border border-dashed border-gray-200 dark:border-white/10">Ảnh</div>
                       )}
@@ -423,7 +459,7 @@ export default function ProductsPage() {
                       
                       <div className="relative shrink-0">
                         <label className="flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/10 transition-colors overflow-hidden" title="Tải ảnh cho màu này">
-                          {c.image ? <img src={c.image} alt="Color img" className="w-full h-full object-contain" /> : <span className="text-[10px] font-bold text-horizon-gray">Ảnh</span>}
+                          {c.image ? <img src={getImageUrl(c.image)} alt="Color img" className="w-full h-full object-contain" /> : <span className="text-[10px] font-bold text-horizon-gray">Ảnh</span>}
                           <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                             if (e.target.files && e.target.files[0]) {
                               handleFileUpload(e.target.files[0], (url) => updateColor(i, 'image', url));
@@ -469,6 +505,94 @@ export default function ProductsPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Section: Thông số kỹ thuật */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-horizon-dark dark:text-white flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center text-sm">4</span> Thông số kỹ thuật (Tùy chọn)
+                  </h3>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 dark:bg-white/5 p-5 rounded-2xl border border-gray-100 dark:border-white/10">
+                  {/* Phone/Tablet/Laptop specifics */}
+                  {(formData.category === 'phone' || formData.category === 'tablet' || formData.category === 'laptop') && (
+                    <>
+                      <div>
+                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Màn hình (Screen)</label>
+                        <input type="text" value={formData.specs?.screen || ""} onChange={(e) => handleSpecChange('screen', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Hệ điều hành (OS)</label>
+                        <input type="text" value={formData.specs?.os || ""} onChange={(e) => handleSpecChange('os', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Camera chính</label>
+                        <input type="text" value={formData.specs?.camera || ""} onChange={(e) => handleSpecChange('camera', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Camera trước</label>
+                        <input type="text" value={formData.specs?.frontCamera || ""} onChange={(e) => handleSpecChange('frontCamera', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Vi xử lý (CPU)</label>
+                        <input type="text" value={formData.specs?.cpu || ""} onChange={(e) => handleSpecChange('cpu', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">RAM</label>
+                        <input type="text" value={formData.specs?.ram || ""} onChange={(e) => handleSpecChange('ram', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Lưu trữ gốc (Storage)</label>
+                        <input type="text" value={formData.specs?.storage || ""} onChange={(e) => handleSpecChange('storage', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Pin (Battery)</label>
+                        <input type="text" value={formData.specs?.battery || ""} onChange={(e) => handleSpecChange('battery', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                      </div>
+                    </>
+                  )}
+                  {/* Accessory specifics */}
+                  {formData.category === 'accessory' && (
+                    <>
+                      <div>
+                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Loại phụ kiện</label>
+                        <input type="text" value={formData.specs?.accessoryType || ""} onChange={(e) => handleSpecChange('accessoryType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Chuẩn kết nối</label>
+                        <input type="text" value={formData.specs?.connectionType || ""} onChange={(e) => handleSpecChange('connectionType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Công suất sạc</label>
+                        <input type="text" value={formData.specs?.chargingPower || ""} onChange={(e) => handleSpecChange('chargingPower', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Chất liệu ốp</label>
+                        <input type="text" value={formData.specs?.caseMaterial || ""} onChange={(e) => handleSpecChange('caseMaterial', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                      </div>
+                    </>
+                  )}
+                  {/* Audio specifics */}
+                  {formData.category === 'audio' && (
+                    <>
+                      <div>
+                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Loại tai nghe</label>
+                        <input type="text" value={formData.specs?.headphoneType || ""} onChange={(e) => handleSpecChange('headphoneType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Tính năng âm thanh</label>
+                        <input type="text" value={formData.specs?.audioFeature || ""} onChange={(e) => handleSpecChange('audioFeature', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-horizon-dark dark:text-white mb-1">Thời lượng pin</label>
+                        <input type="text" value={formData.specs?.battery || ""} onChange={(e) => handleSpecChange('battery', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none" />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
             </form>
             
             <div className="p-6 md:p-8 border-t border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-black/20 flex gap-4">
