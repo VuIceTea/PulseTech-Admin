@@ -75,6 +75,9 @@ export default function ProductsPage() {
   };
 
   // Modal State
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 9;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -285,25 +288,25 @@ export default function ProductsPage() {
                   type="text" 
                   placeholder="Tìm kiếm sản phẩm, hãng..." 
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                   className="w-full bg-white dark:bg-horizon-dark-card border border-gray-100 dark:border-white/10 rounded-full px-4 py-2 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-horizon-brand"
                 />
               </div>
-              <div className="relative flex items-center bg-gray-100 dark:bg-white/5 p-1 rounded-full overflow-hidden text-sm font-medium shrink-0">
+              <div className="relative flex items-center bg-gray-100 dark:bg-[#0B1437] p-1 rounded-full overflow-hidden text-sm font-medium shrink-0 h-[38px]">
                 {/* Sliding indicator */}
                 <div 
-                  className="absolute top-1 bottom-1 bg-white dark:bg-horizon-dark-card rounded-full shadow-sm transition-all duration-300 ease-out"
+                  className="absolute bg-white dark:bg-horizon-brand rounded-full shadow-sm transition-all duration-300 ease-out h-[30px]"
                   style={{
                     width: selectedFilter === 'all' ? '60px' : selectedFilter === 'phone' ? '90px' : selectedFilter === 'tablet' ? '65px' : selectedFilter === 'laptop' ? '70px' : '85px',
                     left: selectedFilter === 'all' ? '4px' : selectedFilter === 'phone' ? '64px' : selectedFilter === 'tablet' ? '154px' : selectedFilter === 'laptop' ? '219px' : '289px'
                   }}
                 />
                 
-                <button onClick={() => setSelectedFilter('all')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[60px] whitespace-nowrap ${selectedFilter === 'all' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Tất cả</button>
-                <button onClick={() => setSelectedFilter('phone')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[90px] whitespace-nowrap ${selectedFilter === 'phone' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Điện thoại</button>
-                <button onClick={() => setSelectedFilter('tablet')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[65px] whitespace-nowrap ${selectedFilter === 'tablet' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Tablet</button>
-                <button onClick={() => setSelectedFilter('laptop')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[70px] whitespace-nowrap ${selectedFilter === 'laptop' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Laptop</button>
-                <button onClick={() => setSelectedFilter('accessory')} className={`relative z-10 px-4 py-1.5 transition-colors cursor-pointer rounded-full w-[85px] whitespace-nowrap ${selectedFilter === 'accessory' ? 'text-black font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Phụ kiện</button>
+                <button onClick={() => { setSelectedFilter('all'); setCurrentPage(1); }} className={`relative z-10 h-full flex items-center justify-center transition-colors cursor-pointer rounded-full w-[60px] whitespace-nowrap ${selectedFilter === 'all' ? 'text-black dark:text-white font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Tất cả</button>
+                <button onClick={() => { setSelectedFilter('phone'); setCurrentPage(1); }} className={`relative z-10 h-full flex items-center justify-center transition-colors cursor-pointer rounded-full w-[90px] whitespace-nowrap ${selectedFilter === 'phone' ? 'text-black dark:text-white font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Điện thoại</button>
+                <button onClick={() => { setSelectedFilter('tablet'); setCurrentPage(1); }} className={`relative z-10 h-full flex items-center justify-center transition-colors cursor-pointer rounded-full w-[65px] whitespace-nowrap ${selectedFilter === 'tablet' ? 'text-black dark:text-white font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Tablet</button>
+                <button onClick={() => { setSelectedFilter('laptop'); setCurrentPage(1); }} className={`relative z-10 h-full flex items-center justify-center transition-colors cursor-pointer rounded-full w-[70px] whitespace-nowrap ${selectedFilter === 'laptop' ? 'text-black dark:text-white font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Laptop</button>
+                <button onClick={() => { setSelectedFilter('accessory'); setCurrentPage(1); }} className={`relative z-10 h-full flex items-center justify-center transition-colors cursor-pointer rounded-full w-[85px] whitespace-nowrap ${selectedFilter === 'accessory' ? 'text-black dark:text-white font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Phụ kiện</button>
               </div>
             </div>
           </div>
@@ -324,6 +327,11 @@ export default function ProductsPage() {
                 return matchesSearch && matchesFilter;
               });
               
+              const currentProducts = filteredProducts.slice(
+                (currentPage - 1) * productsPerPage,
+                currentPage * productsPerPage
+              );
+              
               if (filteredProducts.length === 0) {
                 return (
                   <div className="col-span-full text-center py-12 text-horizon-gray dark:text-black-gray font-medium">
@@ -332,7 +340,7 @@ export default function ProductsPage() {
                 );
               }
 
-              return filteredProducts.map((product) => (
+              return currentProducts.map((product) => (
                 <div key={product.id} className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] group hover:-translate-y-1 transition-transform relative cursor-pointer">
                   <div className="w-full h-48 rounded-xl bg-gray-50 dark:bg-horizon-dark-bg mb-4 relative overflow-hidden flex items-center justify-center p-2">
                     {product.image ? (
@@ -370,7 +378,7 @@ export default function ProductsPage() {
                   <div className="mt-4 flex flex-col gap-1">
                     {(product.originalPrice && product.originalPrice > product.basePrice) ? (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500 line-through font-medium">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 line-through font-medium">
                           {product.originalPrice.toLocaleString('vi-VN')} đ
                         </span>
                         {product.discount && product.discount > 0 && (
@@ -393,6 +401,34 @@ export default function ProductsPage() {
               ));
             })()}
           </div>
+          
+          {/* Pagination */}
+          {!loading && products.length > 0 && (
+            <div className="flex items-center justify-center gap-2 mt-8">
+              {(() => {
+                const filteredProducts = products.filter(p => {
+                  const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.brand.toLowerCase().includes(searchQuery.toLowerCase());
+                  const matchesFilter = selectedFilter === 'all' ? true : p.category === selectedFilter;
+                  return matchesSearch && matchesFilter;
+                });
+                const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+                if (totalPages <= 1) return null;
+                return Array.from({ length: totalPages }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors cursor-pointer ${
+                      currentPage === i + 1
+                        ? 'bg-horizon-brand text-white'
+                        : 'bg-white dark:bg-white/10 text-horizon-gray dark:text-white hover:bg-gray-100 dark:hover:bg-white/20'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ));
+              })()}
+            </div>
+          )}
         </div>
       </div>
 
@@ -401,7 +437,7 @@ export default function ProductsPage() {
         <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex-1">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-black dark:text-white">Kho hàng Top</h2>
-            <button className="text-horizon-brand bg-[#F4F7FE] dark:bg-horizon-dark-bg px-4 py-1.5 rounded-full text-xs font-bold hover:bg-[#E9EDF7] transition-colors cursor-pointer">
+            <button className="text-horizon-brand dark:text-white bg-[#F4F7FE] dark:bg-white/10 px-4 py-1.5 rounded-full text-xs font-bold hover:bg-[#E9EDF7] dark:hover:bg-white/20 transition-colors cursor-pointer">
               Xem tất cả
             </button>
           </div>

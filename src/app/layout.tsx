@@ -189,7 +189,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${active ? "bg-gray-100 dark:bg-white/5 text-horizon-brand dark:text-white font-bold shadow-sm" : "text-horizon-gray dark:text-horizon-dark-gray font-medium hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5"
+                    className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${active ? "bg-horizon-brand/5 dark:bg-horizon-brand/20 text-horizon-brand dark:text-white font-bold shadow-sm" : "text-horizon-gray dark:text-horizon-dark-gray font-medium hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5"
                       }`}
                   >
                     <Icon className={`h-5 w-5 ${active ? "text-horizon-brand dark:text-white" : "text-horizon-gray dark:text-horizon-dark-gray"}`} />
