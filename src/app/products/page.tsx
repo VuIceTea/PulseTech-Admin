@@ -199,8 +199,13 @@ export default function ProductsPage() {
       const url = isEditing ? `/backend-api/products/${editingProduct.id}` : `/backend-api/products`;
       const method = isEditing ? "PUT" : "POST";
       
+      const computedBasePrice = formData.originalPrice 
+        ? Math.round(formData.originalPrice * (1 - (formData.discount || 0) / 100))
+        : (formData.basePrice || 0);
+
       const payload = {
         ...formData,
+        basePrice: computedBasePrice,
         id: isEditing ? editingProduct.id : undefined
       };
 
@@ -256,7 +261,7 @@ export default function ProductsPage() {
               Tham gia vào thế giới công nghệ. Bắt đầu tìm kiếm những sản phẩm mới nhất hoặc quản lý kho hàng của riêng bạn!
             </p>
             <div className="flex items-center gap-4">
-              <button onClick={openAddModal} className="flex items-center gap-2 bg-white text-black hover:bg-gray-50 transition-colors font-bold text-sm px-6 py-2.5 rounded-xl shadow-lg">
+              <button onClick={openAddModal} className="flex items-center gap-2 bg-white text-black hover:bg-gray-50 transition-colors font-bold text-sm px-6 py-2.5 rounded-xl shadow-lg cursor-pointer">
                 <Plus className="h-4 w-4" /> Tạo Sản Phẩm
               </button>
             </div>
@@ -365,13 +370,27 @@ export default function ProductsPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="font-bold text-red-500">
-                      {product.basePrice.toLocaleString('vi-VN')} đ
-                    </span>
-                    <button className="bg-[#F4F7FE] dark:bg-white/10 text-horizon-brand dark:text-white text-xs font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
-                      {categoryMap[product.category] || product.category}
-                    </button>
+                  <div className="mt-4 flex flex-col gap-1">
+                    {(product.originalPrice && product.originalPrice > product.basePrice) ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500 line-through font-medium">
+                          {p.originalPrice.toLocaleString('vi-VN')} đ
+                        </span>
+                        {p.discount && p.discount > 0 && (
+                          <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold">
+                            -{p.discount}%
+                          </span>
+                        )}
+                      </div>
+                    ) : null}
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-red-500 text-lg">
+                        {p.basePrice.toLocaleString('vi-VN')} đ
+                      </span>
+                      <button className="bg-[#F4F7FE] dark:bg-white/10 text-horizon-brand dark:text-white text-xs font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
+                        {categoryMap[p.category] || p.category}
+                      </button>
+                    </div>
                   </div>
                 </div>
               ));
@@ -385,7 +404,7 @@ export default function ProductsPage() {
         <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex-1">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-black dark:text-white">Kho hàng Top</h2>
-            <button className="text-horizon-brand bg-[#F4F7FE] dark:bg-horizon-dark-bg px-4 py-1.5 rounded-full text-xs font-bold hover:bg-[#E9EDF7] transition-colors">
+            <button className="text-horizon-brand bg-[#F4F7FE] dark:bg-horizon-dark-bg px-4 py-1.5 rounded-full text-xs font-bold hover:bg-[#E9EDF7] transition-colors cursor-pointer">
               Xem tất cả
             </button>
           </div>
@@ -395,7 +414,7 @@ export default function ProductsPage() {
               <div key={p.id || i} className="relative flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
                 {i < 3 && (
                   <div className="absolute -top-2 -left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm z-10 flex items-center gap-1">
-                    <span>🔥</span> Top {i + 1} bán chạy
+                    <span>🔥</span> #{i + 1}
                   </div>
                 )}
                 <div className="flex items-center gap-3 min-w-0 pt-1">
@@ -404,7 +423,7 @@ export default function ProductsPage() {
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-sm font-bold text-black dark:text-white truncate">{p.name}</h3>
-                    <p className="text-xs font-medium text-horizon-gray dark:text-black-gray truncate">{p.brand}</p>
+                    <p className="text-xs font-medium text-horizon-gray dark:text-black-gray truncate">{p.brand} - {p.basePrice.toLocaleString('vi-VN')}đ</p>
                   </div>
                 </div>
                 <div className="text-sm font-bold text-black dark:text-white shrink-0 ml-4 text-right">
@@ -427,7 +446,7 @@ export default function ProductsPage() {
                 </h2>
                 <p className="text-sm text-horizon-gray mt-1">Điền đầy đủ các thông tin và biến thể bên dưới</p>
               </div>
-              <button onClick={closeModal} className="h-10 w-10 bg-white dark:bg-white/10 rounded-full flex items-center justify-center text-horizon-gray hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 transition-colors shadow-sm">
+              <button onClick={closeModal} className="h-10 w-10 bg-white dark:bg-white/10 rounded-full flex items-center justify-center text-horizon-gray hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 transition-colors shadow-sm cursor-pointer">
                 <X className="h-6 w-6" />
               </button>
             </div>
@@ -501,27 +520,21 @@ export default function ProductsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div>
-                      <label className="block text-sm font-bold text-red-500 mb-2">
-                        Giá bán cơ bản (VNĐ) <span className="text-red-500">*</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div>
+                      <label className="block text-sm font-bold text-black dark:text-white mb-2 whitespace-nowrap">
+                        Giá gốc (VNĐ) <span className="text-red-500">*</span>
                       </label>
-                      <input required type="number" min="0" name="basePrice" value={formData.basePrice} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-mono text-horizon-brand font-bold outline-none focus:border-horizon-brand transition-colors shadow-sm" />
+                      <input required type="number" min="0" name="originalPrice" value={formData.originalPrice} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-mono text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-black dark:text-white mb-2">
-                        Giá gốc
-                      </label>
-                      <input type="number" min="0" name="originalPrice" value={formData.originalPrice} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-mono text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-black dark:text-white mb-2">
+                      <label className="block text-sm font-bold text-black dark:text-white mb-2 whitespace-nowrap">
                         Giảm giá (%)
                       </label>
-                      <input type="number" min="0" max="100" name="discount" value={formData.discount} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-bold text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
+                      <input type="number" min="0" max="100" name="discount" value={formData.discount} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-bold text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-black dark:text-white mb-2">
+                      <label className="block text-sm font-bold text-black dark:text-white mb-2 whitespace-nowrap">
                         Số lượng Tồn kho <span className="text-red-500">*</span>
                       </label>
                       <input required type="number" min="0" name="stock" value={formData.stock} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-bold text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
@@ -712,10 +725,10 @@ export default function ProductsPage() {
             </form>
             
             <div className="p-6 md:p-8 border-t border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-black/20 flex gap-4">
-              <button type="button" onClick={closeModal} className="flex-1 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-black dark:text-white font-bold py-3.5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/10 transition-colors shadow-sm text-base">
+              <button type="button" onClick={closeModal} className="flex-1 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-black dark:text-white font-bold py-3.5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/10 transition-colors shadow-sm text-base cursor-pointer">
                 Hủy bỏ
               </button>
-              <button type="submit" onClick={handleSubmit} disabled={isSubmitting || isUploading} className="flex-1 bg-horizon-brand text-white font-bold py-3.5 rounded-xl hover:bg-horizon-brand/90 transition-colors shadow-lg shadow-horizon-brand/30 disabled:opacity-70 text-base">
+              <button type="submit" onClick={handleSubmit} disabled={isSubmitting || isUploading} className="flex-1 bg-horizon-brand text-white font-bold py-3.5 rounded-xl hover:bg-horizon-brand/90 transition-colors shadow-lg shadow-horizon-brand/30 disabled:opacity-70 text-base cursor-pointer">
                 {isSubmitting ? "Đang lưu hệ thống..." : isUploading ? "Đang tải ảnh..." : "Lưu Sản Phẩm & Biến thể"}
               </button>
             </div>

@@ -171,7 +171,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           {/* Sidebar */}
-          <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-[#0B1437] transform transition-transform duration-300 md:relative md:translate-x-0 ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
+          <aside className={`fixed inset-y-0 left-0 z-50 w-72 flex flex-col bg-white dark:bg-[#0B1437] transform transition-transform duration-300 md:relative md:translate-x-0 ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
             {/* Logo */}
             <div className="flex items-center justify-center h-24 border-b border-gray-100/50 dark:border-white/5">
               <h1 className="text-[26px] font-bold text-horizon-dark dark:text-white tracking-tighter uppercase">
@@ -203,7 +203,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </nav>
 
             {/* Upgrade Card */}
-            <div className="absolute bottom-8 left-6 right-6 hidden md:block">
+            <div className="mt-auto px-6 mb-8 hidden md:block shrink-0">
               <div className="relative rounded-3xl bg-gradient-to-br from-[#868CFF] to-[#4318FF] p-6 text-center shadow-lg shadow-horizon-brand/30 overflow-hidden">
                 <div className="absolute -top-6 -left-6 w-16 h-16 bg-white/10 rounded-full blur-xl" />
                 <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-xl" />
@@ -215,7 +215,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <p className="text-white/80 text-xs mb-4">
                   Tham khảo tài liệu hoặc liên hệ hỗ trợ PulseTech
                 </p>
-                <button className="w-full bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-bold py-2.5 rounded-xl backdrop-blur-sm">
+                <button className="w-full bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-bold py-2.5 rounded-xl backdrop-blur-sm cursor-pointer">
                   TÀI LIỆU
                 </button>
               </div>
