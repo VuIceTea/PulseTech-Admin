@@ -46,7 +46,7 @@ export default function OrdersPage() {
         method: "PATCH"
       });
       if (!res.ok) throw new Error("Failed to update status");
-      
+
       toast.success("Cập nhật trạng thái thành công!");
       // Update local state without full reload
       setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
@@ -59,15 +59,30 @@ export default function OrdersPage() {
   };
 
   const statusMap = [
-    { value: 1, text: "Chờ xác nhận", icon: <Clock className="h-4 w-4 text-amber-500" />, progress: 20, color: "bg-amber-500" },
-    { value: 2, text: "Đang xử lý", icon: <Clock className="h-4 w-4 text-blue-500" />, progress: 50, color: "bg-blue-500" },
-    { value: 3, text: "Đang giao", icon: <Clock className="h-4 w-4 text-purple-500" />, progress: 80, color: "bg-purple-500" },
-    { value: 4, text: "Đã giao", icon: <CheckCircle2 className="h-4 w-4 text-[#05CD99]" />, progress: 100, color: "bg-[#05CD99]" },
-    { value: 5, text: "Đã hủy", icon: <XCircle className="h-4 w-4 text-red-500" />, progress: 100, color: "bg-red-500" },
+    { value: 0, text: "Chờ xác nhận", icon: <Clock className="h-4 w-4 text-amber-500" />, progress: 20, color: "bg-amber-500" },
+    { value: 1, text: "Đã xác nhận", icon: <CheckCircle2 className="h-4 w-4 text-blue-500" />, progress: 50, color: "bg-blue-500" },
+    { value: 2, text: "Đang giao", icon: <Clock className="h-4 w-4 text-purple-500" />, progress: 80, color: "bg-purple-500" },
+    { value: 3, text: "Đã giao", icon: <CheckCircle2 className="h-4 w-4 text-[#05CD99]" />, progress: 100, color: "bg-[#05CD99]" },
+    { value: 4, text: "Đã hủy", icon: <XCircle className="h-4 w-4 text-red-500" />, progress: 100, color: "bg-red-500" },
   ];
 
   const getStatusDisplay = (status: number) => {
     return statusMap.find(s => s.value === status) || statusMap[4];
+  }
+
+  const formatDate = (dateValue: any) => {
+    if (!dateValue) return "N/A";
+
+    if (typeof dateValue === 'string' && dateValue.includes('/')) {
+      return dateValue;
+    }
+
+    if (Array.isArray(dateValue)) {
+      const [year, month, day, hour = 0, min = 0, sec = 0] = dateValue;
+      return new Date(year, month - 1, day, hour, min, sec).toLocaleDateString('vi-VN');
+    }
+    const date = new Date(dateValue);
+    return isNaN(date.getTime()) ? dateValue : date.toLocaleDateString('vi-VN');
   }
 
   return (
@@ -101,17 +116,17 @@ export default function OrdersPage() {
               ) : orders.map((order) => {
                 const statusInfo = getStatusDisplay(order.status);
                 const isDropdownOpen = openDropdownId === order.id;
-                
+
                 return (
                   <tr key={order.id} className="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
                     <td className="py-4 px-2">
                       <div className="font-bold text-sm text-horizon-dark dark:text-white">#{order.id}</div>
                       <div className="text-xs font-medium text-horizon-gray dark:text-horizon-dark-gray mt-0.5">{order.customerName}</div>
                     </td>
-                    
+
                     {/* Status with Dropdown */}
                     <td className="py-4 px-2 relative">
-                      <button 
+                      <button
                         onClick={() => setOpenDropdownId(isDropdownOpen ? null : order.id)}
                         disabled={updatingId === order.id}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-gray-200 dark:hover:border-white/10 ${updatingId === order.id ? 'opacity-50' : ''}`}
@@ -147,7 +162,7 @@ export default function OrdersPage() {
                     </td>
 
                     <td className="py-4 px-2 text-sm font-bold text-horizon-dark dark:text-white">
-                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString('vi-VN') : "N/A"}
+                      {formatDate(order.createdAt)}
                     </td>
 
                     <td className="py-4 px-2">
@@ -156,9 +171,9 @@ export default function OrdersPage() {
                           {statusInfo.progress}%
                         </span>
                         <div className="w-24 h-2 bg-[#F4F7FE] dark:bg-horizon-dark-bg rounded-full overflow-hidden">
-                          <div 
-                            className={`h-full rounded-full transition-all duration-500 ${statusInfo.color}`} 
-                            style={{ width: `${statusInfo.progress}%` }} 
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${statusInfo.color}`}
+                            style={{ width: `${statusInfo.progress}%` }}
                           />
                         </div>
                       </div>
