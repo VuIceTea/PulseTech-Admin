@@ -127,7 +127,7 @@ export default function ProductsPage() {
 
   const openEditModal = (product: Product) => {
     setEditingProduct(product);
-    setFormData({ 
+    setFormData({
       ...product,
       colors: product.colors || [],
       storages: product.storages || [],
@@ -222,16 +222,45 @@ export default function ProductsPage() {
     }
   };
 
+  const handleMultipleColorFileUpload = async (files: FileList, colorIndex: number) => {
+    setIsUploading(true);
+    try {
+      const newImageUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadData
+        });
+        if (!res.ok) throw new Error('Upload failed');
+        const data = await res.json();
+        newImageUrls.push(data.url);
+      }
+      const currentColor = formData.colors?.[colorIndex];
+      if (currentColor) {
+        const updatedImages = [...(currentColor.images || []), ...newImageUrls];
+        updateColor(colorIndex, 'images', updatedImages);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Lỗi khi tải ảnh màu lên');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
       const isEditing = !!editingProduct;
       const url = isEditing ? `/backend-api/products/${editingProduct.id}` : `/backend-api/products`;
       const method = isEditing ? "PUT" : "POST";
-      
-      const computedBasePrice = formData.originalPrice 
+
+      const computedBasePrice = formData.originalPrice
         ? Math.round(formData.originalPrice * (1 - (formData.discount || 0) / 100))
         : (formData.basePrice || 0);
 
@@ -262,14 +291,14 @@ export default function ProductsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
-    
+
     try {
       const res = await fetch(`/backend-api/products/${id}`, {
         method: "DELETE"
       });
-      
+
       if (!res.ok) throw new Error("Failed to delete");
-      
+
       toast.success("Xóa sản phẩm thành công!");
       loadProducts();
     } catch (err) {
@@ -282,7 +311,7 @@ export default function ProductsPage() {
     <div className="flex flex-col xl:flex-row gap-5 max-w-full">
       {/* Main Left Content */}
       <div className="flex-1 flex flex-col gap-5 min-w-0">
-        
+
         {/* Banner */}
         <div className="w-full bg-gradient-to-br from-[#868CFF] to-[#4318FF] rounded-[20px] p-10 flex flex-col justify-center relative overflow-hidden min-h-[340px]">
           <div className="relative z-10 max-w-md">
@@ -298,7 +327,7 @@ export default function ProductsPage() {
               </button>
             </div>
           </div>
-          
+
           {/* Abstract 3D shape decorative element */}
           <div className="absolute right-0 top-1/2 -translate-y-1/2 w-64 h-64 md:w-96 md:h-96 opacity-50 md:opacity-100 pointer-events-none">
             <div className="w-full h-full bg-white/10 rounded-full blur-3xl absolute" />
@@ -313,9 +342,9 @@ export default function ProductsPage() {
             <h2 className="text-2xl font-bold text-black dark:text-white">Sản phẩm Nổi bật</h2>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
               <div className="relative w-full sm:w-64">
-                <input 
-                  type="text" 
-                  placeholder="Tìm kiếm sản phẩm, hãng..." 
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm sản phẩm, hãng..."
                   value={searchQuery}
                   onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                   className="w-full bg-white dark:bg-horizon-dark-card border border-gray-100 dark:border-white/10 rounded-full px-4 py-2 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-horizon-brand"
@@ -323,14 +352,14 @@ export default function ProductsPage() {
               </div>
               <div className="relative flex items-center bg-gray-100 dark:bg-[#0B1437] p-1 rounded-full overflow-hidden text-sm font-medium shrink-0 h-[38px]">
                 {/* Sliding indicator */}
-                <div 
+                <div
                   className="absolute bg-white dark:bg-horizon-brand rounded-full shadow-sm transition-all duration-300 ease-out h-[30px]"
                   style={{
                     width: selectedFilter === 'all' ? '60px' : selectedFilter === 'phone' ? '90px' : selectedFilter === 'tablet' ? '65px' : selectedFilter === 'laptop' ? '70px' : '85px',
                     left: selectedFilter === 'all' ? '4px' : selectedFilter === 'phone' ? '64px' : selectedFilter === 'tablet' ? '154px' : selectedFilter === 'laptop' ? '219px' : '289px'
                   }}
                 />
-                
+
                 <button onClick={() => { setSelectedFilter('all'); setCurrentPage(1); }} className={`relative z-10 h-full flex items-center justify-center transition-colors cursor-pointer rounded-full w-[60px] whitespace-nowrap ${selectedFilter === 'all' ? 'text-black dark:text-white font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Tất cả</button>
                 <button onClick={() => { setSelectedFilter('phone'); setCurrentPage(1); }} className={`relative z-10 h-full flex items-center justify-center transition-colors cursor-pointer rounded-full w-[90px] whitespace-nowrap ${selectedFilter === 'phone' ? 'text-black dark:text-white font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Điện thoại</button>
                 <button onClick={() => { setSelectedFilter('tablet'); setCurrentPage(1); }} className={`relative z-10 h-full flex items-center justify-center transition-colors cursor-pointer rounded-full w-[65px] whitespace-nowrap ${selectedFilter === 'tablet' ? 'text-black dark:text-white font-bold' : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}>Tablet</button>
@@ -355,12 +384,12 @@ export default function ProductsPage() {
                 const matchesFilter = selectedFilter === 'all' ? true : p.category === selectedFilter;
                 return matchesSearch && matchesFilter;
               });
-              
+
               const currentProducts = filteredProducts.slice(
                 (currentPage - 1) * productsPerPage,
                 currentPage * productsPerPage
               );
-              
+
               if (filteredProducts.length === 0) {
                 return (
                   <div className="col-span-full text-center py-12 text-horizon-gray dark:text-black-gray font-medium">
@@ -377,14 +406,14 @@ export default function ProductsPage() {
                     ) : (
                       <div className="w-32 h-32 bg-gradient-to-tr from-[#868CFF] to-[#4318FF] rounded-lg shadow-lg rotate-12 group-hover:scale-110 transition-transform duration-500" />
                     )}
-                    
+
                     {/* Out of stock badge */}
                     {product.stock === 0 && (
                       <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm z-10">
                         HẾT HÀNG
                       </div>
                     )}
-                    
+
                     {/* Action overlay */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 z-20">
                       <button onClick={(e) => { e.stopPropagation(); openEditModal(product); }} className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100 cursor-pointer">
@@ -395,7 +424,7 @@ export default function ProductsPage() {
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start justify-between">
                     <div className="w-full">
                       <h3 className="text-lg font-bold text-black dark:text-white mb-1 truncate">
@@ -430,7 +459,7 @@ export default function ProductsPage() {
               ));
             })()}
           </div>
-          
+
           {/* Pagination */}
           {!loading && products.length > 0 && (
             <div className="flex items-center justify-center gap-2 mt-8">
@@ -446,11 +475,10 @@ export default function ProductsPage() {
                   <button
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors cursor-pointer ${
-                      currentPage === i + 1
-                        ? 'bg-horizon-brand text-white'
-                        : 'bg-white dark:bg-white/10 text-horizon-gray dark:text-white hover:bg-gray-100 dark:hover:bg-white/20'
-                    }`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors cursor-pointer ${currentPage === i + 1
+                      ? 'bg-horizon-brand text-white'
+                      : 'bg-white dark:bg-white/10 text-horizon-gray dark:text-white hover:bg-gray-100 dark:hover:bg-white/20'
+                      }`}
                   >
                     {i + 1}
                   </button>
@@ -465,7 +493,7 @@ export default function ProductsPage() {
       <div className="w-full xl:w-[350px] flex flex-col gap-5 shrink-0">
         <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex-1">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-bold text-black dark:text-white">Kho hàng Top</h2>
+            <h2 className="text-lg font-bold text-black dark:text-white">Top Bán Chạy</h2>
             <button className="text-horizon-brand dark:text-white bg-[#F4F7FE] dark:bg-white/10 px-4 py-1.5 rounded-full text-xs font-bold hover:bg-[#E9EDF7] dark:hover:bg-white/20 transition-colors cursor-pointer">
               Xem tất cả
             </button>
@@ -512,9 +540,9 @@ export default function ProductsPage() {
                 <X className="h-6 w-6" />
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-6 md:p-8 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-8">
-              
+
               {/* Section: Thông tin chung */}
               <div>
                 <h3 className="text-lg font-bold text-black dark:text-white mb-4 flex items-center gap-2">
@@ -527,24 +555,24 @@ export default function ProductsPage() {
                     </label>
                     <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="relative">
                       <label className="block text-sm font-bold text-black dark:text-white mb-2">
                         Hãng sản xuất <span className="text-red-500">*</span>
                       </label>
-                      <input 
-                        required 
-                        type="text" 
-                        name="brand" 
-                        value={formData.brand} 
+                      <input
+                        required
+                        type="text"
+                        name="brand"
+                        value={formData.brand}
                         onChange={(e) => {
                           handleInputChange(e);
                           setShowBrandSuggestions(true);
-                        }} 
+                        }}
                         onFocus={() => setShowBrandSuggestions(true)}
                         onBlur={() => setTimeout(() => setShowBrandSuggestions(false), 200)}
-                        className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" 
+                        className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm"
                         autoComplete="off"
                       />
                       {showBrandSuggestions && (() => {
@@ -554,8 +582,8 @@ export default function ProductsPage() {
                           return (
                             <div className="absolute z-10 w-full mt-1 bg-white dark:bg-horizon-dark-card border border-gray-100 dark:border-white/10 rounded-xl shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
                               {filteredBrands.map((b, idx) => (
-                                <div 
-                                  key={idx} 
+                                <div
+                                  key={idx}
                                   className="px-4 py-2 text-sm text-black dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors"
                                   onClick={() => handleBrandSelect(b)}
                                 >
@@ -603,29 +631,29 @@ export default function ProductsPage() {
                     </div>
                   </div>
 
-                    <div>
-                      <label className="block text-sm font-bold text-black dark:text-white mb-2">
-                        Hình ảnh đại diện <span className="text-red-500">*</span>
-                      </label>
-                      <div className="flex items-center gap-4 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl p-2 shadow-sm">
-                        {formData.image ? (
-                          <img src={getImageUrl(formData.image)} alt="Preview" className="w-12 h-12 rounded-lg object-contain bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10" />
-                        ) : (
-                          <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-white/5 flex items-center justify-center text-horizon-gray text-xs text-center border border-dashed border-gray-200 dark:border-white/10">Ảnh</div>
-                        )}
-                        <input 
-                          type="file" 
-                          accept="image/*"
-                          onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              handleFileUpload(e.target.files[0], (url) => setFormData(p => ({ ...p, image: url })));
-                            }
-                          }}
-                          className="flex-1 text-sm text-horizon-gray file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#F4F7FE] dark:file:bg-white/10 file:text-horizon-brand dark:file:text-white hover:file:bg-gray-100 dark:hover:file:bg-white/20 transition-colors cursor-pointer" 
-                        />
-                      </div>
+                  <div>
+                    <label className="block text-sm font-bold text-black dark:text-white mb-2">
+                      Hình ảnh đại diện <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex items-center gap-4 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl p-2 shadow-sm">
+                      {formData.image ? (
+                        <img src={getImageUrl(formData.image)} alt="Preview" className="w-12 h-12 rounded-lg object-contain bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-white/5 flex items-center justify-center text-horizon-gray text-xs text-center border border-dashed border-gray-200 dark:border-white/10">Ảnh</div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleFileUpload(e.target.files[0], (url) => setFormData(p => ({ ...p, image: url })));
+                          }
+                        }}
+                        className="flex-1 text-sm text-horizon-gray file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#F4F7FE] dark:file:bg-white/10 file:text-horizon-brand dark:file:text-white hover:file:bg-gray-100 dark:hover:file:bg-white/20 transition-colors cursor-pointer"
+                      />
                     </div>
-                  
+                  </div>
+
                   <div className="mt-5">
                     <label className="block text-sm font-bold text-black dark:text-white mb-2">
                       Bộ sưu tập ảnh (Gallery)
@@ -641,8 +669,8 @@ export default function ProductsPage() {
                           </div>
                         ))}
                       </div>
-                      <input 
-                        type="file" 
+                      <input
+                        type="file"
                         accept="image/*"
                         multiple
                         onChange={(e) => {
@@ -650,7 +678,7 @@ export default function ProductsPage() {
                             handleMultipleFileUpload(e.target.files);
                           }
                         }}
-                        className="w-full text-sm text-horizon-gray file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#F4F7FE] dark:file:bg-white/10 file:text-horizon-brand dark:file:text-white hover:file:bg-gray-100 dark:hover:file:bg-white/20 transition-colors cursor-pointer" 
+                        className="w-full text-sm text-horizon-gray file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#F4F7FE] dark:file:bg-white/10 file:text-horizon-brand dark:file:text-white hover:file:bg-gray-100 dark:hover:file:bg-white/20 transition-colors cursor-pointer"
                       />
                     </div>
                   </div>
@@ -667,34 +695,66 @@ export default function ProductsPage() {
                     <PlusCircle className="h-4 w-4" /> Thêm màu
                   </button>
                 </div>
-                
+
                 <div className="space-y-3">
                   {(!formData.colors || formData.colors.length === 0) && (
                     <div className="text-sm text-horizon-gray text-center py-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">Chưa có biến thể màu sắc nào</div>
                   )}
                   {formData.colors?.map((c, i) => (
                     <div key={i} className="flex items-center gap-4 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-100 dark:border-white/10">
-                      <input type="text" placeholder="Tên màu (VD: Đen nhám)" value={c.name} onChange={(e) => updateColor(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none min-w-[120px]" required />
-                      <div className="flex-1 relative min-w-[150px]">
-                        <input type="number" placeholder="Cộng thêm giá" value={c.priceOffset || ''} onChange={(e) => updateColor(i, 'priceOffset', Number(e.target.value))} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-horizon-gray font-bold">+ VNĐ</span>
-                      </div>
-                      <input type="color" value={c.hex} onChange={(e) => updateColor(i, 'hex', e.target.value)} className="w-10 h-10 rounded cursor-pointer shrink-0" title="Mã màu" />
-                      
-                      <div className="relative shrink-0">
-                        <label className="flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/10 transition-colors overflow-hidden" title="Tải ảnh cho màu này">
-                          {c.image ? <img src={getImageUrl(c.image)} alt="Color img" className="w-full h-full object-contain" /> : <span className="text-[10px] font-bold text-horizon-gray">Ảnh</span>}
-                          <input type="file" accept="image/*" className="hidden" onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              handleFileUpload(e.target.files[0], (url) => updateColor(i, 'image', url));
-                            }
-                          }} />
-                        </label>
-                      </div>
+                      <div className="flex flex-col gap-3 w-full">
+                        <div className="flex items-center gap-4">
+                          <input type="text" placeholder="Tên màu (VD: Đen nhám)" value={c.name} onChange={(e) => updateColor(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none min-w-[120px]" required />
+                          <div className="flex-1 relative min-w-[150px]">
+                            <input type="number" placeholder="Cộng thêm giá" value={c.priceOffset ? c.priceOffset.toString() : ''} onChange={(e) => updateColor(i, 'priceOffset', e.target.value ? parseInt(e.target.value, 10) : 0)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-horizon-gray font-bold">+ VNĐ</span>
+                          </div>
+                          <input type="color" value={c.hex} onChange={(e) => updateColor(i, 'hex', e.target.value)} className="w-10 h-10 rounded cursor-pointer shrink-0" title="Mã màu" />
+                          
+                          <div className="relative shrink-0">
+                            <label className="flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/10 transition-colors overflow-hidden" title="Tải ảnh đại diện nhỏ">
+                              {c.image ? <img src={getImageUrl(c.image)} alt="Color img" className="w-full h-full object-contain" /> : <span className="text-[10px] font-bold text-horizon-gray">Thumb</span>}
+                              <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  handleFileUpload(e.target.files[0], (url) => updateColor(i, 'image', url));
+                                }
+                              }} />
+                            </label>
+                          </div>
 
-                      <button type="button" onClick={() => removeColor(i)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 p-2 rounded-lg transition-colors shrink-0">
-                        <MinusCircle className="h-5 w-5" />
-                      </button>
+                          <button type="button" onClick={() => removeColor(i)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 p-2 rounded-lg transition-colors shrink-0">
+                            <MinusCircle className="h-5 w-5" />
+                          </button>
+                        </div>
+                        
+                        {/* Thư viện ảnh của màu này */}
+                        <div className="flex flex-col gap-2 p-3 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl">
+                          <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Thư viện ảnh riêng cho màu này</label>
+                          <div className="flex flex-wrap items-center gap-3">
+                            {c.images?.map((imgUrl, imgIndex) => (
+                              <div key={imgIndex} className="relative group shrink-0">
+                                <img src={getImageUrl(imgUrl)} alt="gallery" className="w-16 h-16 object-contain rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5" />
+                                <button type="button" onClick={() => {
+                                  const newImages = [...(c.images || [])];
+                                  newImages.splice(imgIndex, 1);
+                                  updateColor(i, 'images', newImages);
+                                }} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <MinusCircle className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ))}
+                            <label className="flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-gray-50 dark:bg-white/5 border border-dashed border-gray-300 dark:border-white/20 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 shrink-0 transition-colors">
+                              <PlusCircle className="w-5 h-5 text-gray-400" />
+                              <span className="text-[9px] mt-1 text-gray-500 font-medium">Thêm ảnh</span>
+                              <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => {
+                                if (e.target.files && e.target.files.length > 0) {
+                                  handleMultipleColorFileUpload(e.target.files, i);
+                                }
+                              }} />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -710,7 +770,7 @@ export default function ProductsPage() {
                     <PlusCircle className="h-4 w-4" /> Thêm dung lượng
                   </button>
                 </div>
-                
+
                 <div className="space-y-3">
                   {(!formData.storages || formData.storages.length === 0) && (
                     <div className="text-sm text-horizon-gray text-center py-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">Không có biến thể dung lượng</div>
@@ -719,7 +779,7 @@ export default function ProductsPage() {
                     <div key={i} className="flex items-center gap-4 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-100 dark:border-white/10">
                       <input type="text" placeholder="Tên (VD: 256GB)" value={s.name} onChange={(e) => updateStorage(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" required />
                       <div className="flex-1 relative">
-                        <input type="number" placeholder="Cộng thêm giá (đ)" value={s.priceOffset} onChange={(e) => updateStorage(i, 'priceOffset', Number(e.target.value))} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" required />
+                        <input type="number" placeholder="Cộng thêm giá" value={s.priceOffset ? s.priceOffset.toString() : ''} onChange={(e) => updateStorage(i, 'priceOffset', e.target.value ? parseInt(e.target.value, 10) : 0)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" required />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-horizon-gray font-bold">+ VNĐ</span>
                       </div>
                       <button type="button" onClick={() => removeStorage(i)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 p-2 rounded-lg transition-colors shrink-0">
@@ -737,7 +797,7 @@ export default function ProductsPage() {
                     <span className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center text-sm">4</span> Thông số kỹ thuật (Tùy chọn)
                   </h3>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 dark:bg-white/5 p-5 rounded-2xl border border-gray-100 dark:border-white/10">
                   {/* Phone/Tablet/Laptop specifics */}
                   {(formData.category === 'phone' || formData.category === 'tablet' || formData.category === 'laptop') && (
@@ -818,7 +878,7 @@ export default function ProductsPage() {
               </div>
 
             </form>
-            
+
             <div className="p-6 md:p-8 border-t border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-black/20 flex gap-4">
               <button type="button" onClick={closeModal} className="flex-1 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-black dark:text-white font-bold py-3.5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/10 transition-colors shadow-sm text-base cursor-pointer">
                 Hủy bỏ
@@ -839,7 +899,7 @@ export default function ProductsPage() {
                 <X className="h-6 w-6" />
               </button>
             </div>
-            
+
             <div className="flex flex-col md:flex-row h-full overflow-y-auto">
               {/* Left Image Section - Sticky */}
               <div className="w-full md:w-[45%] bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10 p-8 flex flex-col items-center justify-center relative md:sticky top-0 min-h-[300px] md:h-auto shrink-0">
@@ -853,7 +913,7 @@ export default function ProductsPage() {
                 ) : (
                   <div className="w-48 h-48 bg-gradient-to-tr from-[#868CFF] to-[#4318FF] rounded-[30px] shadow-2xl rotate-12 mb-6" />
                 )}
-                
+
                 {/* Thumbnails Gallery */}
                 {viewingProduct.images && viewingProduct.images.length > 0 && (
                   <div className="flex gap-3 overflow-x-auto w-full no-scrollbar px-2 pb-2 justify-center">
@@ -868,7 +928,7 @@ export default function ProductsPage() {
                   </div>
                 )}
               </div>
-              
+
               {/* Right Content Section */}
               <div className="w-full md:w-[55%] p-8 md:p-10 space-y-8 bg-white dark:bg-horizon-dark-bg">
                 <div>
@@ -879,7 +939,7 @@ export default function ProductsPage() {
                   <h2 className="text-3xl md:text-4xl font-extrabold text-black dark:text-white leading-tight mb-6">
                     {viewingProduct.name}
                   </h2>
-                  
+
                   <div className="flex items-end gap-4 p-5 bg-gradient-to-r from-gray-50 to-white dark:from-white/5 dark:to-transparent border border-gray-100 dark:border-white/10 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
                     <div>
                       {viewingProduct.originalPrice && viewingProduct.originalPrice > viewingProduct.basePrice && (
@@ -903,7 +963,7 @@ export default function ProductsPage() {
                 {((viewingProduct.colors && viewingProduct.colors.length > 0) || (viewingProduct.storages && viewingProduct.storages.length > 0)) && (
                   <div className="space-y-6">
                     <h3 className="text-xl font-bold text-black dark:text-white border-b border-gray-100 dark:border-white/10 pb-3">Tùy chọn phiên bản</h3>
-                    
+
                     {viewingProduct.colors && viewingProduct.colors.length > 0 && (
                       <div>
                         <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Màu sắc</p>
@@ -934,7 +994,7 @@ export default function ProductsPage() {
                     )}
                   </div>
                 )}
-                
+
                 {viewingProduct.specs && Object.keys(viewingProduct.specs).length > 0 && (
                   <div className="space-y-6">
                     <h3 className="text-xl font-bold text-black dark:text-white border-b border-gray-100 dark:border-white/10 pb-3">Thông số kỹ thuật</h3>

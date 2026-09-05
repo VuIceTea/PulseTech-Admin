@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dfass7bhc',
+  api_key: '555521466399446',
+  api_secret: 'z18XFjfADtYmfj1Qc6VZToRQ7vI',
+});
 
 export async function POST(request: Request) {
   try {
@@ -15,25 +20,29 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Get the file extension
-    const originalName = file.name;
-    const extension = path.extname(originalName);
-    
-    // Generate unique filename
-    const filename = `${uuidv4()}${extension}`;
-    
-    // Save to public/uploads directory
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    const filepath = path.join(uploadDir, filename);
-    
-    await writeFile(filepath, buffer);
-    
-    // Return absolute URL pointing to this admin server (assuming port 5000 for admin)
-    const url = `http://localhost:5000/uploads/${filename}`;
+    // Upload to Cloudinary using a Promise
+    const uploadResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { 
+          folder: 'pulsetech',
+          format: 'png' // Đảm bảo lưu thành PNG
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      uploadStream.end(buffer);
+    });
+
+    // Return the secure URL with on-the-fly background removal transformation
+    const originalUrl = (uploadResult as any).secure_url;
+    // Chèn thêm tham số 'e_background_removal' vào URL để Cloudinary tự động xóa nền khi hiển thị
+    const url = originalUrl.replace('/upload/', '/upload/e_background_removal/');
     
     return NextResponse.json({ url });
   } catch (error) {
-    console.error('Error uploading file:', error);
+    console.error('Error uploading file to Cloudinary:', error);
     return NextResponse.json({ error: 'Failed to upload file.' }, { status: 500 });
   }
 }
