@@ -37,8 +37,8 @@ export async function POST(request: Request) {
 
     // Return the secure URL with on-the-fly background removal transformation
     const originalUrl = (uploadResult as any).secure_url;
-    // Chèn thêm tham số 'e_background_removal' vào URL để Cloudinary tự động xóa nền khi hiển thị
-    const url = originalUrl.replace('/upload/', '/upload/e_background_removal/');
+    // Removed background removal transformation to avoid hitting Cloudinary free tier limits
+    const url = originalUrl;
     
     return NextResponse.json({ url });
   } catch (error) {
