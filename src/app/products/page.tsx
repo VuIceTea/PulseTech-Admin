@@ -61,6 +61,8 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [showBrandSuggestions, setShowBrandSuggestions] = useState(false);
+  const [minPrice, setMinPrice] = useState<number | "">("");
+  const [maxPrice, setMaxPrice] = useState<number | "">("");
 
   const categoryMap: Record<string, string> = {
     'phone': 'Điện thoại',
@@ -368,6 +370,34 @@ export default function ProductsPage() {
               </div>
             </div>
           </div>
+          <div className="flex flex-wrap items-center gap-4 mb-6 p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10">
+            <span className="text-sm font-bold text-black dark:text-white">Lọc theo giá:</span>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                placeholder="Từ (VNĐ)"
+                value={minPrice === "" ? "" : minPrice}
+                onChange={(e) => { setMinPrice(e.target.value ? Number(e.target.value) : ""); setCurrentPage(1); }}
+                className="w-28 sm:w-32 bg-white dark:bg-horizon-dark-card border border-gray-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-black dark:text-white outline-none focus:border-horizon-brand transition-colors"
+              />
+              <span className="text-gray-500 font-bold">-</span>
+              <input
+                type="number"
+                placeholder="Đến (VNĐ)"
+                value={maxPrice === "" ? "" : maxPrice}
+                onChange={(e) => { setMaxPrice(e.target.value ? Number(e.target.value) : ""); setCurrentPage(1); }}
+                className="w-28 sm:w-32 bg-white dark:bg-horizon-dark-card border border-gray-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-black dark:text-white outline-none focus:border-horizon-brand transition-colors"
+              />
+            </div>
+            
+            <div className="flex items-center gap-2 flex-wrap">
+              <button onClick={() => { setMinPrice(""); setMaxPrice(""); setCurrentPage(1); }} className="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-white/20 transition-colors cursor-pointer">Tất cả giá</button>
+              <button onClick={() => { setMinPrice(0); setMaxPrice(5000000); setCurrentPage(1); }} className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-colors cursor-pointer ${minPrice === 0 && maxPrice === 5000000 ? 'bg-horizon-brand text-white border-horizon-brand' : 'bg-white dark:bg-[#0B1437] border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-horizon-brand'}`}>&lt; 5 Triệu</button>
+              <button onClick={() => { setMinPrice(5000000); setMaxPrice(10000000); setCurrentPage(1); }} className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-colors cursor-pointer ${minPrice === 5000000 && maxPrice === 10000000 ? 'bg-horizon-brand text-white border-horizon-brand' : 'bg-white dark:bg-[#0B1437] border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-horizon-brand'}`}>5 - 10 Triệu</button>
+              <button onClick={() => { setMinPrice(10000000); setMaxPrice(20000000); setCurrentPage(1); }} className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-colors cursor-pointer ${minPrice === 10000000 && maxPrice === 20000000 ? 'bg-horizon-brand text-white border-horizon-brand' : 'bg-white dark:bg-[#0B1437] border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-horizon-brand'}`}>10 - 20 Triệu</button>
+              <button onClick={() => { setMinPrice(20000000); setMaxPrice(""); setCurrentPage(1); }} className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-colors cursor-pointer ${minPrice === 20000000 && maxPrice === "" ? 'bg-horizon-brand text-white border-horizon-brand' : 'bg-white dark:bg-[#0B1437] border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-horizon-brand'}`}>&gt; 20 Triệu</button>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {loading ? (
@@ -382,7 +412,9 @@ export default function ProductsPage() {
               const filteredProducts = products.filter(p => {
                 const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.brand.toLowerCase().includes(searchQuery.toLowerCase());
                 const matchesFilter = selectedFilter === 'all' ? true : p.category === selectedFilter;
-                return matchesSearch && matchesFilter;
+                const matchesMin = minPrice === "" || p.basePrice >= minPrice;
+                const matchesMax = maxPrice === "" || p.basePrice <= maxPrice;
+                return matchesSearch && matchesFilter && matchesMin && matchesMax;
               });
 
               const currentProducts = filteredProducts.slice(
