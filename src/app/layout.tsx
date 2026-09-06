@@ -19,7 +19,8 @@ import {
   X,
   Settings,
   Mail,
-  LogOut
+  LogOut,
+  Tag
 } from "lucide-react";
 import "./globals.css";
 import { Toaster } from "sonner";
@@ -147,6 +148,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     { name: "Sản Phẩm", href: "/products", icon: Package },
     { name: "Đơn Hàng", href: "/orders", icon: ShoppingCart },
     { name: "Khách Hàng", href: "/customers", icon: Users },
+    { name: "Khuyến Mãi", href: "/vouchers", icon: Tag },
   ];
 
   return (
