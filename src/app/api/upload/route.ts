@@ -8,6 +8,37 @@ cloudinary.config({
   api_secret: 'z18XFjfADtYmfj1Qc6VZToRQ7vI',
 });
 
+// Helper function to remove background using Photoroom API
+async function removeBackgroundWithPhotoroom(imageBuffer: Buffer): Promise<Buffer | null> {
+  const apiKey = process.env.PHOTOROOM_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const formData = new FormData();
+    const blob = new Blob([imageBuffer], { type: 'image/png' });
+    formData.append('image_file', blob);
+
+    const res = await fetch('https://sdk.photoroom.com/v1/segment', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey
+      },
+      body: formData
+    });
+
+    if (!res.ok) {
+      console.error('Photoroom API error:', await res.text());
+      return null;
+    }
+
+    const arrayBuffer = await res.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  } catch (error) {
+    console.error('Error calling Photoroom API:', error);
+    return null;
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -18,31 +49,67 @@ export async function POST(request: Request) {
     }
 
     const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    const originalBuffer = Buffer.from(bytes);
 
-    // Upload to Cloudinary using a Promise
+    // 1. Upload original image to Cloudinary first
     const uploadResult = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         { 
           folder: 'pulsetech',
-          format: 'png' // Đảm bảo lưu thành PNG
+          format: 'png'
         },
         (error, result) => {
           if (error) reject(error);
           else resolve(result);
         }
       );
-      uploadStream.end(buffer);
+      uploadStream.end(originalBuffer);
     });
 
-    // Return the secure URL with on-the-fly background removal transformation
     const originalUrl = (uploadResult as any).secure_url;
-    // Removed background removal transformation to avoid hitting Cloudinary free tier limits
-    const url = originalUrl;
     
-    return NextResponse.json({ url });
+    // 2. Try Cloudinary's AI Background Removal
+    const cloudinaryBgRemovalUrl = originalUrl.replace('/upload/', '/upload/e_background_removal/');
+    let finalUrl = originalUrl;
+
+    try {
+      // Ping the transformed URL to see if Cloudinary successfully generated it
+      // (If the free tier quota is exceeded, this will return 400 Bad Request)
+      const pingRes = await fetch(cloudinaryBgRemovalUrl, { method: 'HEAD' });
+      
+      if (pingRes.ok) {
+        finalUrl = cloudinaryBgRemovalUrl;
+      } else {
+        console.warn('Cloudinary background removal failed or hit quota. Trying Photoroom fallback...');
+        
+        // 3. Fallback to Photoroom API if Cloudinary fails
+        const photoroomBuffer = await removeBackgroundWithPhotoroom(originalBuffer);
+        if (photoroomBuffer) {
+          // Re-upload the processed image to Cloudinary
+          const fallbackUploadResult = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+              { folder: 'pulsetech', format: 'png' },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
+            );
+            uploadStream.end(photoroomBuffer);
+          });
+          
+          finalUrl = (fallbackUploadResult as any).secure_url;
+          console.log('Successfully used Photoroom as fallback!');
+        } else {
+           console.warn('Photoroom fallback failed or API key not configured. Using original image.');
+        }
+      }
+    } catch (err) {
+      console.error('Error during fallback check:', err);
+    }
+    
+    return NextResponse.json({ url: finalUrl });
   } catch (error) {
-    console.error('Error uploading file to Cloudinary:', error);
+    console.error('Error uploading file:', error);
     return NextResponse.json({ error: 'Failed to upload file.' }, { status: 500 });
   }
 }
