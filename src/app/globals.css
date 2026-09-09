@@ -49,3 +49,15 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Global cursor pointer for interactive elements and hover states */
+a,
+button,
+input[type="checkbox"],
+input[type="radio"],
+[role="button"],
+[class*="hover:"],
+[class*="group-hover:"],
+[class*="peer-hover:"] {
+  cursor: pointer;
+}
