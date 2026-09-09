@@ -4,6 +4,10 @@ import React, { useEffect, useState, FormEvent } from "react";
 import { Heart, Plus, Trash2, Edit2, X, PlusCircle, MinusCircle } from "lucide-react";
 import { toast } from "sonner";
 import Select from "react-select";
+import dynamic from "next/dynamic";
+
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+import "react-quill/dist/quill.snow.css";
 
 interface ColorVariant {
   name: string;
@@ -47,6 +51,7 @@ interface Product {
   discount?: number;
   stock: number;
   description?: string;
+  content?: string;
   image?: string;
   images?: string[];
   colors: ColorVariant[];
@@ -155,8 +160,9 @@ export default function ProductsPage() {
     discount: 0,
     stock: 0,
     image: "",
-    images: [],
     description: "",
+    content: "",
+    images: [],
     colors: [],
     storages: [],
     specs: {}
@@ -182,7 +188,7 @@ export default function ProductsPage() {
 
   const openAddModal = () => {
     setEditingProduct(null);
-    setFormData({ name: "", brand: "", category: "phone", basePrice: 0, originalPrice: 0, discount: 0, stock: 0, image: "", description: "", colors: [], storages: [], specs: {} });
+    setFormData({ name: "", brand: "", category: "phone", basePrice: 0, originalPrice: 0, discount: 0, stock: 0, image: "", description: "", content: "", colors: [], storages: [], specs: {} });
     setIsModalOpen(true);
   };
 
@@ -737,6 +743,20 @@ export default function ProductsPage() {
                       rows={4}
                       className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm resize-y"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-black dark:text-white mb-2">
+                      Nội dung chi tiết (Bài viết)
+                    </label>
+                    <div className="bg-white dark:bg-[#0B1437] rounded-xl overflow-hidden border border-gray-200 dark:border-white/10">
+                      <ReactQuill 
+                        theme="snow" 
+                        value={formData.content || ""} 
+                        onChange={(val) => setFormData(p => ({ ...p, content: val }))} 
+                        className="h-64 mb-12 text-black dark:text-white"
+                      />
+                    </div>
                   </div>
 
                   <div>
