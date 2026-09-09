@@ -17,6 +17,11 @@ interface Coupon {
   currentUsage: number;
   maxUsage: number;
   isActive: boolean;
+  assignedEmails?: string[];
+}
+
+interface CouponFormState extends Partial<Coupon> {
+  assignedEmailsText?: string;
 }
 
 export default function VouchersPage() {
@@ -33,7 +38,7 @@ export default function VouchersPage() {
   const nextMonth = new Date();
   nextMonth.setMonth(nextMonth.getMonth() + 1);
 
-  const [formData, setFormData] = useState<Partial<Coupon>>({
+  const [formData, setFormData] = useState<CouponFormState>({
     code: "",
     description: "",
     discountPercent: 0,
@@ -45,6 +50,7 @@ export default function VouchersPage() {
     currentUsage: 0,
     maxUsage: 100,
     isActive: true,
+    assignedEmailsText: "",
   });
 
   const loadCoupons = () => {
@@ -70,6 +76,7 @@ export default function VouchersPage() {
       minOrderValue: 0, maxDiscountValue: 0, currentUsage: 0, maxUsage: 100, isActive: true,
       validFrom: new Date().toISOString().slice(0, 16),
       validUntil: nextMonth.toISOString().slice(0, 16),
+      assignedEmailsText: "",
     });
     setIsModalOpen(true);
   };
@@ -80,6 +87,7 @@ export default function VouchersPage() {
       ...coupon,
       validFrom: coupon.validFrom ? new Date(coupon.validFrom).toISOString().slice(0, 16) : "",
       validUntil: coupon.validUntil ? new Date(coupon.validUntil).toISOString().slice(0, 16) : "",
+      assignedEmailsText: coupon.assignedEmails ? coupon.assignedEmails.join(", ") : "",
     });
     setIsModalOpen(true);
   };
@@ -109,11 +117,16 @@ export default function VouchersPage() {
       const isEditing = !!editingCoupon;
       const url = isEditing ? `/backend-api/orders/coupons/${editingCoupon.id}` : `/backend-api/orders/coupons`;
       
-      const payload = { 
+      const parsedEmails = formData.assignedEmailsText ? formData.assignedEmailsText.split(",").map(e => e.trim()).filter(Boolean) : [];
+      
+      const payload: any = { 
         ...formData, 
         id: isEditing ? editingCoupon.id : undefined,
-        code: formData.code?.toUpperCase()
+        code: formData.code?.toUpperCase(),
+        assignedEmails: parsedEmails.length > 0 ? parsedEmails : null
       };
+      
+      delete payload.assignedEmailsText;
       
       const res = await fetch(url, {
         method: isEditing ? "PUT" : "POST",
@@ -311,6 +324,12 @@ export default function VouchersPage() {
                   <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">Đã dùng</label>
                   <input type="number" name="currentUsage" value={formData.currentUsage} disabled className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-horizon-gray cursor-not-allowed" />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">Gán riêng cho khách hàng (Tùy chọn)</label>
+                <textarea name="assignedEmailsText" value={formData.assignedEmailsText} onChange={handleInputChange} placeholder="Nhập các email cách nhau bởi dấu phẩy. Vd: user1@email.com, user2@email.com..." rows={3} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors" />
+                <p className="text-xs text-gray-500 mt-1">Nếu để trống, tất cả khách hàng đều có thể áp dụng mã giảm giá này nếu thỏa điều kiện.</p>
               </div>
 
             </form>
