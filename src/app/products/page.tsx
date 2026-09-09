@@ -65,7 +65,7 @@ const categoryOptions = [
 const customSelectStyles = {
   control: (base: any, state: any) => ({
     ...base,
-    border: state.isFocused ? '1px solid rgba(215, 0, 24, 0.5)' : '1px solid #e5e7eb',
+    border: state.isFocused ? '1px solid rgba(67, 24, 255, 0.5)' : '1px solid #e5e7eb',
     boxShadow: 'none',
     borderRadius: '0.75rem',
     padding: '0.25rem 0.5rem',
@@ -74,13 +74,13 @@ const customSelectStyles = {
     transition: 'all 0.2s',
     backgroundColor: 'white',
     '&:hover': {
-      border: state.isFocused ? '1px solid rgba(215, 0, 24, 0.5)' : '1px solid #d1d5db',
+      border: state.isFocused ? '1px solid rgba(67, 24, 255, 0.5)' : '1px solid #d1d5db',
     }
   }),
   option: (base: any, state: any) => ({
     ...base,
-    backgroundColor: state.isSelected ? '#d70018' : state.isFocused ? '#ffebed' : 'white',
-    color: state.isSelected ? 'white' : state.isFocused ? '#b80014' : '#1f2937',
+    backgroundColor: state.isSelected ? '#4318FF' : state.isFocused ? '#eef2ff' : 'white',
+    color: state.isSelected ? 'white' : state.isFocused ? '#4318FF' : '#1f2937',
     fontSize: '1rem',
     cursor: 'pointer',
     transition: 'all 0.15s',
@@ -400,7 +400,7 @@ export default function ProductsPage() {
         {/* Trending Section */}
         <div>
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
-            <h2 className="text-2xl font-bold text-black dark:text-white">Sản phẩm Nổi bật</h2>
+            <h2 className="text-2xl font-bold text-black dark:text-white whitespace-nowrap">Sản phẩm Nổi bật</h2>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
               <div className="relative w-full sm:w-64">
                 <input
@@ -408,7 +408,7 @@ export default function ProductsPage() {
                   placeholder="Tìm kiếm sản phẩm, hãng..."
                   value={searchQuery}
                   onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                  className="w-full bg-white dark:bg-horizon-dark-card border border-gray-100 dark:border-white/10 rounded-full px-4 py-2 text-sm text-black dark:text-white outline-none focus:ring-2 focus:ring-horizon-brand"
+                  className="w-full bg-white dark:bg-horizon-dark-card border border-gray-100 dark:border-white/10 rounded-full px-4 py-2 text-sm text-black dark:text-white outline-none focus:border-horizon-brand"
                 />
               </div>
               <div className="relative flex items-center bg-gray-100 dark:bg-[#0B1437] p-1 rounded-full overflow-hidden text-sm font-medium shrink-0 h-[38px]">
