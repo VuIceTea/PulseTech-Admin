@@ -89,7 +89,7 @@ export default function AdminDashboardPage() {
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Tổng Doanh Thu</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {totalRevenue > 0 ? `$${(totalRevenue / 25000).toFixed(1)}K` : "$340.5"}
+              {totalRevenue > 0 ? `${totalRevenue.toLocaleString('vi-VN')}đ` : "8.512.500đ"}
             </p>
           </div>
         </div>
@@ -183,7 +183,7 @@ export default function AdminDashboardPage() {
           <div className="flex items-end justify-between mb-6">
             <div>
               <h2 className="text-[34px] font-bold text-horizon-dark dark:text-white leading-tight">
-                {totalRevenue > 0 ? `$${(totalRevenue / 25000).toFixed(1)}K` : "$37.5K"}
+                {totalRevenue > 0 ? `${totalRevenue.toLocaleString('vi-VN')}đ` : "937.500.000đ"}
               </h2>
               <div className="flex items-center gap-2 text-sm font-medium">
                 <span className="text-horizon-gray dark:text-horizon-dark-gray">Tổng chi tiêu</span>
