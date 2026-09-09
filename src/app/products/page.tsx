@@ -961,18 +961,39 @@ export default function ProductsPage() {
                 )}
 
                 {/* Thumbnails Gallery */}
-                {((viewingProduct.images && viewingProduct.images.length > 0) || viewingProduct.image) && (
-                  <div className="flex gap-3 overflow-x-auto w-full no-scrollbar px-2 pb-2 justify-center">
-                    <div onClick={() => setViewSelectedImage(viewingProduct.imageUrl || viewingProduct.image)} className={`w-16 h-16 rounded-xl bg-white border-2 overflow-hidden flex items-center justify-center p-1 shrink-0 cursor-pointer shadow-sm transition-colors ${viewSelectedImage === (viewingProduct.imageUrl || viewingProduct.image) ? 'border-horizon-brand' : 'border-gray-200 dark:border-white/10 hover:border-horizon-brand/50'}`}>
-                      <img src={getImageUrl(viewingProduct.imageUrl || viewingProduct.image)} alt="Main thumbnail" className="object-contain w-full h-full" />
+                {(() => {
+                  let allImages = (viewingProduct.images && viewingProduct.images.length > 0) ? [...viewingProduct.images] : (viewingProduct.image ? [viewingProduct.image] : []);
+                  if (viewingProduct.colors) {
+                    viewingProduct.colors.forEach(c => {
+                      if (c.image && !allImages.includes(c.image)) {
+                        allImages.push(c.image);
+                      }
+                      if (c.images) {
+                        c.images.forEach(img => {
+                          if (!allImages.includes(img)) allImages.push(img);
+                        });
+                      }
+                    });
+                  }
+                  
+                  // Ensure main image is included and not duplicated
+                  const mainImage = viewingProduct.imageUrl || viewingProduct.image;
+                  if (mainImage && !allImages.includes(mainImage)) {
+                    allImages = [mainImage, ...allImages];
+                  }
+
+                  if (allImages.length === 0) return null;
+
+                  return (
+                    <div className="flex gap-3 overflow-x-auto w-full no-scrollbar px-2 pb-2 justify-center">
+                      {allImages.map((img, idx) => (
+                        <div key={idx} onClick={() => setViewSelectedImage(img)} className={`w-16 h-16 rounded-xl bg-white border-2 overflow-hidden flex items-center justify-center p-1 shrink-0 cursor-pointer transition-colors ${viewSelectedImage === img ? 'border-horizon-brand' : 'border-gray-100 dark:border-white/10 hover:border-horizon-brand/50'}`}>
+                          <img src={getImageUrl(img)} alt={`Thumbnail ${idx}`} className="object-contain w-full h-full" />
+                        </div>
+                      ))}
                     </div>
-                    {viewingProduct.images && viewingProduct.images.map((img, idx) => (
-                      <div key={idx} onClick={() => setViewSelectedImage(img)} className={`w-16 h-16 rounded-xl bg-white border-2 overflow-hidden flex items-center justify-center p-1 shrink-0 cursor-pointer transition-colors shadow-sm ${viewSelectedImage === img ? 'border-horizon-brand' : 'border-gray-200 dark:border-white/10 hover:border-horizon-brand/50'}`}>
-                        <img src={getImageUrl(img)} alt={`Thumbnail ${idx}`} className="object-contain w-full h-full" />
-                      </div>
-                    ))}
-                  </div>
-                )}
+                  );
+                })()}
               </div>
 
               {/* Right Content Section */}
@@ -1015,7 +1036,7 @@ export default function ProductsPage() {
                         <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Màu sắc</p>
                         <div className="flex flex-wrap gap-3">
                           {viewingProduct.colors.map((c, i) => (
-                            <div key={i} onClick={() => setViewSelectedColorIdx(i)} className={`flex flex-col items-center bg-white dark:bg-[#0B1437] border-2 p-2 rounded-xl min-w-[90px] transition-colors cursor-pointer group ${viewSelectedColorIdx === i ? 'border-horizon-brand dark:border-horizon-brand ring-2 ring-horizon-brand/20' : 'border-gray-100 dark:border-white/10 hover:border-horizon-brand dark:hover:border-horizon-brand'}`}>
+                            <div key={i} onClick={() => setViewSelectedColorIdx(i)} className={`flex flex-col items-center bg-white dark:bg-[#0B1437] border p-2 rounded-xl min-w-[90px] transition-colors cursor-pointer group ${viewSelectedColorIdx === i ? 'border-horizon-brand dark:border-horizon-brand' : 'border-gray-200 dark:border-white/10 hover:border-horizon-brand/50 dark:hover:border-horizon-brand/50'}`}>
                               <span className="w-8 h-8 rounded-full border border-gray-200 shadow-sm mb-2 group-hover:scale-110 transition-transform" style={{ backgroundColor: c.hex }}></span>
                               <span className="font-bold text-xs text-black dark:text-white text-center">{c.name}</span>
                               {c.priceOffset ? <span className="text-[10px] text-red-500 font-bold mt-1">+{c.priceOffset.toLocaleString('vi-VN')}đ</span> : null}
@@ -1030,7 +1051,7 @@ export default function ProductsPage() {
                         <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Dung lượng / Phiên bản</p>
                         <div className="flex flex-wrap gap-3">
                           {viewingProduct.storages.map((s, i) => (
-                            <div key={i} onClick={() => setViewSelectedStorageIdx(i)} className={`flex flex-col justify-center bg-white dark:bg-[#0B1437] border-2 px-4 py-3 rounded-xl transition-colors cursor-pointer text-center min-w-[100px] ${viewSelectedStorageIdx === i ? 'border-horizon-brand dark:border-horizon-brand ring-2 ring-horizon-brand/20' : 'border-gray-100 dark:border-white/10 hover:border-horizon-brand dark:hover:border-horizon-brand'}`}>
+                            <div key={i} onClick={() => setViewSelectedStorageIdx(i)} className={`flex flex-col justify-center bg-white dark:bg-[#0B1437] border px-4 py-3 rounded-xl transition-colors cursor-pointer text-center min-w-[100px] ${viewSelectedStorageIdx === i ? 'border-horizon-brand dark:border-horizon-brand' : 'border-gray-200 dark:border-white/10 hover:border-horizon-brand/50 dark:hover:border-horizon-brand/50'}`}>
                               <span className="font-bold text-sm text-black dark:text-white">{s.name}</span>
                               {s.priceOffset ? <span className="text-xs text-red-500 font-bold mt-1">+{s.priceOffset.toLocaleString('vi-VN')}đ</span> : null}
                             </div>
