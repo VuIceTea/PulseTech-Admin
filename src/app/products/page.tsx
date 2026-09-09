@@ -727,6 +727,20 @@ export default function ProductsPage() {
 
                   <div>
                     <label className="block text-sm font-bold text-black dark:text-white mb-2">
+                      Đặc điểm nổi bật (Mô tả sản phẩm)
+                    </label>
+                    <textarea 
+                      name="description" 
+                      value={formData.description || ""} 
+                      onChange={handleInputChange} 
+                      placeholder="Nhập các đặc điểm nổi bật, thiết kế sang trọng, hiệu năng..." 
+                      rows={4}
+                      className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm resize-y"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-black dark:text-white mb-2">
                       Hình ảnh đại diện <span className="text-red-500">*</span>
                     </label>
                     <div className="flex items-center gap-4 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl p-2 shadow-sm">
