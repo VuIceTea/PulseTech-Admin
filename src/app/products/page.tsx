@@ -3,6 +3,7 @@
 import React, { useEffect, useState, FormEvent } from "react";
 import { Heart, Plus, Trash2, Edit2, X, PlusCircle, MinusCircle } from "lucide-react";
 import { toast } from "sonner";
+import Select from "react-select";
 
 interface ColorVariant {
   name: string;
@@ -52,6 +53,50 @@ interface Product {
   storages: StorageVariant[];
   specs?: ProductSpec;
 }
+
+const categoryOptions = [
+  { value: "phone", label: "Điện thoại" },
+  { value: "tablet", label: "Máy tính bảng" },
+  { value: "laptop", label: "Laptop" },
+  { value: "accessory", label: "Phụ kiện" },
+  { value: "audio", label: "Âm thanh" },
+];
+
+const customSelectStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    border: state.isFocused ? '1px solid rgba(215, 0, 24, 0.5)' : '1px solid #e5e7eb',
+    boxShadow: 'none',
+    borderRadius: '0.75rem',
+    padding: '0.25rem 0.5rem',
+    fontSize: '1rem',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    backgroundColor: 'white',
+    '&:hover': {
+      border: state.isFocused ? '1px solid rgba(215, 0, 24, 0.5)' : '1px solid #d1d5db',
+    }
+  }),
+  option: (base: any, state: any) => ({
+    ...base,
+    backgroundColor: state.isSelected ? '#d70018' : state.isFocused ? '#ffebed' : 'white',
+    color: state.isSelected ? 'white' : state.isFocused ? '#b80014' : '#1f2937',
+    fontSize: '1rem',
+    cursor: 'pointer',
+    transition: 'all 0.15s',
+    borderRadius: '0.5rem',
+    margin: '0.2rem 0.4rem',
+    width: 'auto',
+  }),
+  menu: (base: any) => ({
+    ...base,
+    borderRadius: '0.75rem',
+    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+    overflow: 'hidden',
+    border: '1px solid #f3f4f6',
+    zIndex: 50
+  })
+};
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -646,13 +691,16 @@ export default function ProductsPage() {
                       <label className="block text-sm font-bold text-black dark:text-white mb-2">
                         Danh mục <span className="text-red-500">*</span>
                       </label>
-                      <select required name="category" value={formData.category} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm">
-                        <option value="phone">Điện thoại</option>
-                        <option value="tablet">Máy tính bảng</option>
-                        <option value="laptop">Laptop</option>
-                        <option value="accessory">Phụ kiện</option>
-                        <option value="audio">Âm thanh</option>
-                      </select>
+                      <Select 
+                        options={categoryOptions}
+                        value={categoryOptions.find(o => o.value === formData.category) || null}
+                        onChange={(option: any) => setFormData({...formData, category: option ? option.value : ''})}
+                        placeholder="Chọn danh mục"
+                        styles={customSelectStyles}
+                        isSearchable={false}
+                        className="my-react-select-container"
+                        classNamePrefix="my-react-select"
+                      />
                     </div>
                   </div>
 
