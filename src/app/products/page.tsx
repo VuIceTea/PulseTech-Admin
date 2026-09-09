@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, FormEvent } from "react";
-import { Heart, Plus, Trash2, Edit2, X, PlusCircle, MinusCircle } from "lucide-react";
+import { Heart, Plus, Trash2, Edit2, X, PlusCircle, MinusCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import Select from "react-select";
 import dynamic from "next/dynamic";
@@ -13,6 +13,7 @@ interface ColorVariant {
   name: string;
   hex: string;
   image?: string;
+  images?: string[];
   priceOffset?: number;
 }
 
@@ -53,6 +54,7 @@ interface Product {
   description?: string;
   content?: string;
   image?: string;
+  imageUrl?: string;
   images?: string[];
   colors: ColorVariant[];
   storages: StorageVariant[];
@@ -136,6 +138,7 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   
   // Viewer state
@@ -145,7 +148,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     if (viewingProduct) {
-      setViewSelectedImage(viewingProduct.imageUrl || viewingProduct.image);
+      setViewSelectedImage(viewingProduct.imageUrl || viewingProduct.image || null);
       setViewSelectedColorIdx(0);
       setViewSelectedStorageIdx(0);
     }
@@ -192,15 +195,30 @@ export default function ProductsPage() {
     setIsModalOpen(true);
   };
 
-  const openEditModal = (product: Product) => {
-    setEditingProduct(product);
-    setFormData({
-      ...product,
-      colors: product.colors || [],
-      storages: product.storages || [],
-      specs: product.specs || {}
-    });
-    setIsModalOpen(true);
+  const openEditModal = async (product: Product) => {
+    setLoadingProductId(product.id);
+
+    try {
+      const response = await fetch(`/backend-api/products/${encodeURIComponent(product.id)}`);
+      if (!response.ok) throw new Error(`Failed to load product ${product.id}`);
+
+      const detailedProduct: Product = await response.json();
+      setEditingProduct(detailedProduct);
+      setFormData({
+        ...detailedProduct,
+        description: detailedProduct.description || "",
+        content: detailedProduct.content || "",
+        colors: detailedProduct.colors || [],
+        storages: detailedProduct.storages || [],
+        specs: detailedProduct.specs || {}
+      });
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error(error);
+      toast.error("Không thể tải thông tin chi tiết sản phẩm");
+    } finally {
+      setLoadingProductId(null);
+    }
   };
 
   const closeModal = () => {
@@ -230,7 +248,7 @@ export default function ProductsPage() {
 
   const addColor = () => setFormData(p => ({ ...p, colors: [...(p.colors || []), { name: "", hex: "#000000", priceOffset: 0 }] }));
   const removeColor = (idx: number) => setFormData(p => ({ ...p, colors: (p.colors || []).filter((_, i) => i !== idx) }));
-  const updateColor = (idx: number, field: string, val: string | number) => {
+  const updateColor = (idx: number, field: string, val: string | number | string[]) => {
     const newColors = [...(formData.colors || [])];
     newColors[idx] = { ...newColors[idx], [field]: val };
     setFormData(p => ({ ...p, colors: newColors }));
@@ -513,8 +531,16 @@ export default function ProductsPage() {
 
                     {/* Action overlay */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 z-20">
-                      <button onClick={(e) => { e.stopPropagation(); openEditModal(product); }} className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100 cursor-pointer">
-                        <Edit2 className="h-4 w-4" /> Sửa
+                      <button
+                        type="button"
+                        disabled={loadingProductId === product.id}
+                        onClick={(e) => { e.stopPropagation(); void openEditModal(product); }}
+                        className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100 cursor-pointer disabled:cursor-wait disabled:opacity-70"
+                      >
+                        {loadingProductId === product.id
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <Edit2 className="h-4 w-4" />}
+                        {loadingProductId === product.id ? "Đang tải" : "Sửa"}
                       </button>
                       <button onClick={(e) => { e.stopPropagation(); handleDelete(product.id); }} className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-600 cursor-pointer">
                         <Trash2 className="h-4 w-4" /> Xóa

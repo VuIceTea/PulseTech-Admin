@@ -114,7 +114,7 @@ export default function VouchersPage() {
     if (type === 'number') {
       finalValue = Number(value);
     } else if (type === 'checkbox') {
-      finalValue = e.target.checked;
+      finalValue = (e.target as HTMLInputElement).checked;
     }
     
     setFormData(prev => ({

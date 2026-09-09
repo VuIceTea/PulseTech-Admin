@@ -3,9 +3,9 @@ import { v2 as cloudinary } from 'cloudinary';
 
 // Configure Cloudinary
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dfass7bhc',
-  api_key: '555521466399446',
-  api_secret: 'z18XFjfADtYmfj1Qc6VZToRQ7vI',
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 // Helper function to remove background using Photoroom API
@@ -15,7 +15,9 @@ async function removeBackgroundWithPhotoroom(imageBuffer: Buffer): Promise<Buffe
 
   try {
     const formData = new FormData();
-    const blob = new Blob([imageBuffer], { type: 'image/png' });
+    const imageBytes = new Uint8Array(imageBuffer.byteLength);
+    imageBytes.set(imageBuffer);
+    const blob = new Blob([imageBytes], { type: 'image/png' });
     formData.append('image_file', blob);
 
     const res = await fetch('https://sdk.photoroom.com/v1/segment', {
