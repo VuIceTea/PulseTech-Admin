@@ -87,6 +87,20 @@ export default function ProductsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+  
+  // Viewer state
+  const [viewSelectedImage, setViewSelectedImage] = useState<string | null>(null);
+  const [viewSelectedColorIdx, setViewSelectedColorIdx] = useState<number>(0);
+  const [viewSelectedStorageIdx, setViewSelectedStorageIdx] = useState<number>(0);
+
+  useEffect(() => {
+    if (viewingProduct) {
+      setViewSelectedImage(viewingProduct.imageUrl || viewingProduct.image);
+      setViewSelectedColorIdx(0);
+      setViewSelectedStorageIdx(0);
+    }
+  }, [viewingProduct]);
+
   const [formData, setFormData] = useState<Partial<Product>>({
     name: "",
     brand: "",
@@ -941,19 +955,19 @@ export default function ProductsPage() {
                   </div>
                 )}
                 {viewingProduct.image ? (
-                  <img src={getImageUrl(viewingProduct.imageUrl || viewingProduct.image)} alt={viewingProduct.name} className="w-full max-h-[400px] object-contain filter drop-shadow-2xl hover:scale-105 transition-transform duration-500 mb-6" />
+                  <img src={getImageUrl(viewSelectedImage || viewingProduct.imageUrl || viewingProduct.image)} alt={viewingProduct.name} className="w-full max-h-[400px] object-contain filter drop-shadow-2xl hover:scale-105 transition-transform duration-500 mb-6" />
                 ) : (
                   <div className="w-48 h-48 bg-gradient-to-tr from-[#868CFF] to-[#4318FF] rounded-[30px] shadow-2xl rotate-12 mb-6" />
                 )}
 
                 {/* Thumbnails Gallery */}
-                {viewingProduct.images && viewingProduct.images.length > 0 && (
+                {((viewingProduct.images && viewingProduct.images.length > 0) || viewingProduct.image) && (
                   <div className="flex gap-3 overflow-x-auto w-full no-scrollbar px-2 pb-2 justify-center">
-                    <div className="w-16 h-16 rounded-xl bg-white border-2 border-horizon-brand overflow-hidden flex items-center justify-center p-1 shrink-0 cursor-pointer shadow-sm">
-                      <img src={getImageUrl(viewingProduct.image)} alt="Main thumbnail" className="object-contain w-full h-full" />
+                    <div onClick={() => setViewSelectedImage(viewingProduct.imageUrl || viewingProduct.image)} className={`w-16 h-16 rounded-xl bg-white border-2 overflow-hidden flex items-center justify-center p-1 shrink-0 cursor-pointer shadow-sm transition-colors ${viewSelectedImage === (viewingProduct.imageUrl || viewingProduct.image) ? 'border-horizon-brand' : 'border-gray-200 dark:border-white/10 hover:border-horizon-brand/50'}`}>
+                      <img src={getImageUrl(viewingProduct.imageUrl || viewingProduct.image)} alt="Main thumbnail" className="object-contain w-full h-full" />
                     </div>
-                    {viewingProduct.images.map((img, idx) => (
-                      <div key={idx} className="w-16 h-16 rounded-xl bg-white border border-gray-200 dark:border-white/10 overflow-hidden flex items-center justify-center p-1 shrink-0 cursor-pointer hover:border-horizon-brand/50 transition-colors shadow-sm">
+                    {viewingProduct.images && viewingProduct.images.map((img, idx) => (
+                      <div key={idx} onClick={() => setViewSelectedImage(img)} className={`w-16 h-16 rounded-xl bg-white border-2 overflow-hidden flex items-center justify-center p-1 shrink-0 cursor-pointer transition-colors shadow-sm ${viewSelectedImage === img ? 'border-horizon-brand' : 'border-gray-200 dark:border-white/10 hover:border-horizon-brand/50'}`}>
                         <img src={getImageUrl(img)} alt={`Thumbnail ${idx}`} className="object-contain w-full h-full" />
                       </div>
                     ))}
@@ -976,11 +990,11 @@ export default function ProductsPage() {
                     <div>
                       {viewingProduct.originalPrice && viewingProduct.originalPrice > viewingProduct.basePrice && (
                         <div className="text-gray-400 dark:text-gray-500 line-through font-medium text-base mb-1">
-                          {viewingProduct.originalPrice.toLocaleString('vi-VN')} đ
+                          {(viewingProduct.originalPrice + (viewingProduct.colors?.[viewSelectedColorIdx]?.priceOffset || 0) + (viewingProduct.storages?.[viewSelectedStorageIdx]?.priceOffset || 0)).toLocaleString('vi-VN')} đ
                         </div>
                       )}
                       <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">
-                        {viewingProduct.basePrice.toLocaleString('vi-VN')} <span className="text-2xl text-red-500">đ</span>
+                        {(viewingProduct.basePrice + (viewingProduct.colors?.[viewSelectedColorIdx]?.priceOffset || 0) + (viewingProduct.storages?.[viewSelectedStorageIdx]?.priceOffset || 0)).toLocaleString('vi-VN')} <span className="text-2xl text-red-500">đ</span>
                       </div>
                     </div>
                     {viewingProduct.discount && viewingProduct.discount > 0 ? (
@@ -1001,7 +1015,7 @@ export default function ProductsPage() {
                         <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Màu sắc</p>
                         <div className="flex flex-wrap gap-3">
                           {viewingProduct.colors.map((c, i) => (
-                            <div key={i} className="flex flex-col items-center bg-white dark:bg-[#0B1437] border-2 border-gray-100 dark:border-white/10 p-2 rounded-xl min-w-[90px] hover:border-horizon-brand dark:hover:border-horizon-brand transition-colors cursor-pointer group">
+                            <div key={i} onClick={() => setViewSelectedColorIdx(i)} className={`flex flex-col items-center bg-white dark:bg-[#0B1437] border-2 p-2 rounded-xl min-w-[90px] transition-colors cursor-pointer group ${viewSelectedColorIdx === i ? 'border-horizon-brand dark:border-horizon-brand ring-2 ring-horizon-brand/20' : 'border-gray-100 dark:border-white/10 hover:border-horizon-brand dark:hover:border-horizon-brand'}`}>
                               <span className="w-8 h-8 rounded-full border border-gray-200 shadow-sm mb-2 group-hover:scale-110 transition-transform" style={{ backgroundColor: c.hex }}></span>
                               <span className="font-bold text-xs text-black dark:text-white text-center">{c.name}</span>
                               {c.priceOffset ? <span className="text-[10px] text-red-500 font-bold mt-1">+{c.priceOffset.toLocaleString('vi-VN')}đ</span> : null}
@@ -1016,7 +1030,7 @@ export default function ProductsPage() {
                         <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Dung lượng / Phiên bản</p>
                         <div className="flex flex-wrap gap-3">
                           {viewingProduct.storages.map((s, i) => (
-                            <div key={i} className="flex flex-col justify-center bg-white dark:bg-[#0B1437] border-2 border-gray-100 dark:border-white/10 px-4 py-3 rounded-xl hover:border-horizon-brand dark:hover:border-horizon-brand transition-colors cursor-pointer text-center min-w-[100px]">
+                            <div key={i} onClick={() => setViewSelectedStorageIdx(i)} className={`flex flex-col justify-center bg-white dark:bg-[#0B1437] border-2 px-4 py-3 rounded-xl transition-colors cursor-pointer text-center min-w-[100px] ${viewSelectedStorageIdx === i ? 'border-horizon-brand dark:border-horizon-brand ring-2 ring-horizon-brand/20' : 'border-gray-100 dark:border-white/10 hover:border-horizon-brand dark:hover:border-horizon-brand'}`}>
                               <span className="font-bold text-sm text-black dark:text-white">{s.name}</span>
                               {s.priceOffset ? <span className="text-xs text-red-500 font-bold mt-1">+{s.priceOffset.toLocaleString('vi-VN')}đ</span> : null}
                             </div>
