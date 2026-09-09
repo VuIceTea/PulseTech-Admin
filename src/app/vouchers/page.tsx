@@ -21,12 +21,15 @@ interface Coupon {
 }
 
 interface CouponFormState extends Partial<Coupon> {
-  assignedEmailsText?: string;
+  targetAudience: 'public' | 'specific';
+  selectedEmails: string[];
 }
 
 export default function VouchersPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,7 +53,8 @@ export default function VouchersPage() {
     currentUsage: 0,
     maxUsage: 100,
     isActive: true,
-    assignedEmailsText: "",
+    targetAudience: 'public',
+    selectedEmails: [],
   });
 
   const loadCoupons = () => {
@@ -67,6 +71,11 @@ export default function VouchersPage() {
 
   useEffect(() => {
     loadCoupons();
+    // Load users for specific assignment
+    fetch("/backend-api/auth/users")
+      .then(res => res.ok ? res.json() : [])
+      .then(data => setUsers(Array.isArray(data) ? data : []))
+      .catch(console.error);
   }, []);
 
   const openAddModal = () => {
@@ -76,8 +85,10 @@ export default function VouchersPage() {
       minOrderValue: 0, maxDiscountValue: 0, currentUsage: 0, maxUsage: 100, isActive: true,
       validFrom: new Date().toISOString().slice(0, 16),
       validUntil: nextMonth.toISOString().slice(0, 16),
-      assignedEmailsText: "",
+      targetAudience: 'public',
+      selectedEmails: [],
     });
+    setSearchQuery("");
     setIsModalOpen(true);
   };
 
@@ -87,8 +98,10 @@ export default function VouchersPage() {
       ...coupon,
       validFrom: coupon.validFrom ? new Date(coupon.validFrom).toISOString().slice(0, 16) : "",
       validUntil: coupon.validUntil ? new Date(coupon.validUntil).toISOString().slice(0, 16) : "",
-      assignedEmailsText: coupon.assignedEmails ? coupon.assignedEmails.join(", ") : "",
+      targetAudience: coupon.assignedEmails && coupon.assignedEmails.length > 0 ? 'specific' : 'public',
+      selectedEmails: coupon.assignedEmails || [],
     });
+    setSearchQuery("");
     setIsModalOpen(true);
   };
 
@@ -117,16 +130,15 @@ export default function VouchersPage() {
       const isEditing = !!editingCoupon;
       const url = isEditing ? `/backend-api/orders/coupons/${editingCoupon.id}` : `/backend-api/orders/coupons`;
       
-      const parsedEmails = formData.assignedEmailsText ? formData.assignedEmailsText.split(",").map(e => e.trim()).filter(Boolean) : [];
-      
       const payload: any = { 
         ...formData, 
         id: isEditing ? editingCoupon.id : undefined,
         code: formData.code?.toUpperCase(),
-        assignedEmails: parsedEmails.length > 0 ? parsedEmails : null
+        assignedEmails: formData.targetAudience === 'specific' && formData.selectedEmails.length > 0 ? formData.selectedEmails : null
       };
       
-      delete payload.assignedEmailsText;
+      delete payload.targetAudience;
+      delete payload.selectedEmails;
       
       const res = await fetch(url, {
         method: isEditing ? "PUT" : "POST",
@@ -327,9 +339,79 @@ export default function VouchersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">Gán riêng cho khách hàng (Tùy chọn)</label>
-                <textarea name="assignedEmailsText" value={formData.assignedEmailsText} onChange={handleInputChange} placeholder="Nhập các email cách nhau bởi dấu phẩy. Vd: user1@email.com, user2@email.com..." rows={3} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-horizon-dark dark:text-white outline-none focus:border-horizon-brand transition-colors" />
-                <p className="text-xs text-gray-500 mt-1">Nếu để trống, tất cả khách hàng đều có thể áp dụng mã giảm giá này nếu thỏa điều kiện.</p>
+                <label className="block text-sm font-bold text-horizon-dark dark:text-white mb-2">Đối tượng áp dụng *</label>
+                <div className="flex gap-4 mb-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="targetAudience" value="public" checked={formData.targetAudience === 'public'} onChange={handleInputChange} className="w-4 h-4 text-horizon-brand focus:ring-horizon-brand" />
+                    <span className="text-sm font-medium text-horizon-dark dark:text-white">Tất cả khách hàng</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="targetAudience" value="specific" checked={formData.targetAudience === 'specific'} onChange={handleInputChange} className="w-4 h-4 text-horizon-brand focus:ring-horizon-brand" />
+                    <span className="text-sm font-medium text-horizon-dark dark:text-white">Khách hàng cụ thể</span>
+                  </label>
+                </div>
+                
+                {formData.targetAudience === 'specific' && (
+                  <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4">
+                    <div className="mb-3 flex gap-2">
+                      <input 
+                        type="text" 
+                        placeholder="Tìm kiếm theo tên hoặc email..." 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-horizon-dark dark:text-white outline-none focus:border-horizon-brand"
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          const filtered = users.filter(u => u.name.toLowerCase().includes(searchQuery.toLowerCase()) || u.email.toLowerCase().includes(searchQuery.toLowerCase()));
+                          const filteredEmails = filtered.map(u => u.email);
+                          // Select all in search that aren't already selected
+                          const newToAdd = filteredEmails.filter(e => !formData.selectedEmails.includes(e));
+                          setFormData({...formData, selectedEmails: [...formData.selectedEmails, ...newToAdd]});
+                        }}
+                        className="px-3 py-2 bg-[#F4F7FE] dark:bg-white/10 text-horizon-brand dark:text-white text-xs font-bold rounded-lg hover:bg-[#E9EDF7] transition-colors whitespace-nowrap"
+                      >
+                        Chọn Hết (Lọc)
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => setFormData({...formData, selectedEmails: []})}
+                        className="px-3 py-2 bg-red-50 dark:bg-red-500/10 text-red-500 text-xs font-bold rounded-lg hover:bg-red-100 transition-colors whitespace-nowrap"
+                      >
+                        Bỏ Chọn
+                      </button>
+                    </div>
+                    <div className="max-h-48 overflow-y-auto custom-scrollbar border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#0B1437]">
+                      {users.filter(u => u.name.toLowerCase().includes(searchQuery.toLowerCase()) || u.email.toLowerCase().includes(searchQuery.toLowerCase())).length > 0 ? (
+                        users.filter(u => u.name.toLowerCase().includes(searchQuery.toLowerCase()) || u.email.toLowerCase().includes(searchQuery.toLowerCase())).map(u => (
+                          <label key={u.id} className="flex items-center gap-3 p-3 border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer last:border-0">
+                            <input 
+                              type="checkbox" 
+                              checked={formData.selectedEmails.includes(u.email)}
+                              onChange={(e) => {
+                                const newEmails = e.target.checked 
+                                  ? [...formData.selectedEmails, u.email] 
+                                  : formData.selectedEmails.filter(email => email !== u.email);
+                                setFormData({...formData, selectedEmails: newEmails});
+                              }}
+                              className="w-4 h-4 rounded border-gray-300 text-horizon-brand focus:ring-horizon-brand" 
+                            />
+                            <div>
+                              <div className="text-sm font-bold text-horizon-dark dark:text-white">{u.name}</div>
+                              <div className="text-xs text-horizon-gray">{u.email}</div>
+                            </div>
+                          </label>
+                        ))
+                      ) : (
+                        <div className="p-4 text-center text-sm text-horizon-gray">Không tìm thấy khách hàng nào.</div>
+                      )}
+                    </div>
+                    <div className="mt-3 text-xs font-medium text-horizon-brand">
+                      Đã chọn: {formData.selectedEmails.length} khách hàng
+                    </div>
+                  </div>
+                )}
               </div>
 
             </form>
