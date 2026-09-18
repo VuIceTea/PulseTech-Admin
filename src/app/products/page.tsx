@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, FormEvent } from "react";
-import { Heart, Plus, Trash2, Edit2, X, PlusCircle, MinusCircle } from "lucide-react";
+import { Heart, Plus, Trash2, Edit2, X, PlusCircle, MinusCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import Select from "react-select";
 import dynamic from "next/dynamic";
@@ -13,12 +13,15 @@ interface ColorVariant {
   name: string;
   hex: string;
   image?: string;
+  images?: string[];
   priceOffset?: number;
 }
 
 interface StorageVariant {
   name: string;
   priceOffset: number;
+  stock?: number;
+  specs?: ProductSpec;
 }
 
 interface ProductSpec {
@@ -53,6 +56,7 @@ interface Product {
   description?: string;
   content?: string;
   image?: string;
+  imageUrl?: string;
   images?: string[];
   colors: ColorVariant[];
   storages: StorageVariant[];
@@ -136,6 +140,7 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   
   // Viewer state
@@ -145,7 +150,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     if (viewingProduct) {
-      setViewSelectedImage(viewingProduct.imageUrl || viewingProduct.image);
+      setViewSelectedImage(viewingProduct.imageUrl || viewingProduct.image || null);
       setViewSelectedColorIdx(0);
       setViewSelectedStorageIdx(0);
     }
@@ -192,15 +197,30 @@ export default function ProductsPage() {
     setIsModalOpen(true);
   };
 
-  const openEditModal = (product: Product) => {
-    setEditingProduct(product);
-    setFormData({
-      ...product,
-      colors: product.colors || [],
-      storages: product.storages || [],
-      specs: product.specs || {}
-    });
-    setIsModalOpen(true);
+  const openEditModal = async (product: Product) => {
+    setLoadingProductId(product.id);
+
+    try {
+      const response = await fetch(`/backend-api/products/${encodeURIComponent(product.id)}`);
+      if (!response.ok) throw new Error(`Failed to load product ${product.id}`);
+
+      const detailedProduct: Product = await response.json();
+      setEditingProduct(detailedProduct);
+      setFormData({
+        ...detailedProduct,
+        description: detailedProduct.description || "",
+        content: detailedProduct.content || "",
+        colors: detailedProduct.colors || [],
+        storages: detailedProduct.storages || [],
+        specs: detailedProduct.specs || {}
+      });
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error(error);
+      toast.error("Không thể tải thông tin chi tiết sản phẩm");
+    } finally {
+      setLoadingProductId(null);
+    }
   };
 
   const closeModal = () => {
@@ -230,7 +250,7 @@ export default function ProductsPage() {
 
   const addColor = () => setFormData(p => ({ ...p, colors: [...(p.colors || []), { name: "", hex: "#000000", priceOffset: 0 }] }));
   const removeColor = (idx: number) => setFormData(p => ({ ...p, colors: (p.colors || []).filter((_, i) => i !== idx) }));
-  const updateColor = (idx: number, field: string, val: string | number) => {
+  const updateColor = (idx: number, field: string, val: string | number | string[]) => {
     const newColors = [...(formData.colors || [])];
     newColors[idx] = { ...newColors[idx], [field]: val };
     setFormData(p => ({ ...p, colors: newColors }));
@@ -238,10 +258,24 @@ export default function ProductsPage() {
 
   const addStorage = () => setFormData(p => ({ ...p, storages: [...(p.storages || []), { name: "", priceOffset: 0 }] }));
   const removeStorage = (idx: number) => setFormData(p => ({ ...p, storages: (p.storages || []).filter((_, i) => i !== idx) }));
-  const updateStorage = (idx: number, field: string, val: string | number) => {
-    const newStorages = [...(formData.storages || [])];
-    newStorages[idx] = { ...newStorages[idx], [field]: val };
-    setFormData(p => ({ ...p, storages: newStorages }));
+  const updateStorage = (index: number, field: string, value: any) => {
+    setFormData((prev) => {
+      const newStorages = [...(prev.storages || [])];
+      newStorages[index] = { ...newStorages[index], [field]: value };
+      return { ...prev, storages: newStorages };
+    });
+  };
+
+  const updateStorageSpec = (index: number, specField: string, value: string) => {
+    setFormData((prev) => {
+      const newStorages = [...(prev.storages || [])];
+      const currentSpecs = newStorages[index].specs || {};
+      newStorages[index] = {
+        ...newStorages[index],
+        specs: { ...currentSpecs, [specField]: value }
+      };
+      return { ...prev, storages: newStorages };
+    });
   };
 
   const handleFileUpload = async (file: File, callback: (url: string) => void) => {
@@ -513,8 +547,16 @@ export default function ProductsPage() {
 
                     {/* Action overlay */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 z-20">
-                      <button onClick={(e) => { e.stopPropagation(); openEditModal(product); }} className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100 cursor-pointer">
-                        <Edit2 className="h-4 w-4" /> Sửa
+                      <button
+                        type="button"
+                        disabled={loadingProductId === product.id}
+                        onClick={(e) => { e.stopPropagation(); void openEditModal(product); }}
+                        className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100 cursor-pointer disabled:cursor-wait disabled:opacity-70"
+                      >
+                        {loadingProductId === product.id
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <Edit2 className="h-4 w-4" />}
+                        {loadingProductId === product.id ? "Đang tải" : "Sửa"}
                       </button>
                       <button onClick={(e) => { e.stopPropagation(); handleDelete(product.id); }} className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-600 cursor-pointer">
                         <Trash2 className="h-4 w-4" /> Xóa
@@ -904,15 +946,28 @@ export default function ProductsPage() {
                     <div className="text-sm text-horizon-gray text-center py-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">Không có biến thể dung lượng</div>
                   )}
                   {formData.storages?.map((s, i) => (
-                    <div key={i} className="flex items-center gap-4 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-100 dark:border-white/10">
-                      <input type="text" placeholder="Tên (VD: 256GB)" value={s.name} onChange={(e) => updateStorage(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" required />
-                      <div className="flex-1 relative">
-                        <input type="number" placeholder="Cộng thêm giá" value={s.priceOffset ? s.priceOffset.toString() : ''} onChange={(e) => updateStorage(i, 'priceOffset', e.target.value ? parseInt(e.target.value, 10) : 0)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" required />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-horizon-gray font-bold">+ VNĐ</span>
+                    <div key={i} className="flex flex-col gap-3 bg-gray-50 dark:bg-white/5 p-4 rounded-xl border border-gray-100 dark:border-white/10">
+                      <div className="flex items-center gap-4">
+                        <input type="text" placeholder="Tên (VD: 256GB)" value={s.name} onChange={(e) => updateStorage(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" required />
+                        <div className="flex-1 relative">
+                          <input type="number" placeholder="Cộng thêm giá" value={s.priceOffset ? s.priceOffset.toString() : ''} onChange={(e) => updateStorage(i, 'priceOffset', e.target.value ? parseInt(e.target.value, 10) : 0)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" required />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-horizon-gray font-bold">+ VNĐ</span>
+                        </div>
+                        <div className="flex-1 relative">
+                          <input type="number" placeholder="Tồn kho riêng (Tùy chọn)" value={s.stock !== undefined ? s.stock.toString() : ''} onChange={(e) => updateStorage(i, 'stock', e.target.value ? parseInt(e.target.value, 10) : undefined)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-horizon-gray font-bold">SP</span>
+                        </div>
+                        <button type="button" onClick={() => removeStorage(i)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 p-2 rounded-lg transition-colors shrink-0">
+                          <MinusCircle className="h-5 w-5" />
+                        </button>
                       </div>
-                      <button type="button" onClick={() => removeStorage(i)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 p-2 rounded-lg transition-colors shrink-0">
-                        <MinusCircle className="h-5 w-5" />
-                      </button>
+                      
+                      {/* Thêm nhanh thông số riêng cho bản này */}
+                      <div className="flex gap-4 items-center">
+                        <label className="text-xs font-bold text-gray-500 w-24">Cấu hình riêng:</label>
+                        <input type="text" placeholder="RAM (VD: 8GB)" value={s.specs?.ram || ''} onChange={(e) => updateStorageSpec(i, 'ram', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                        <input type="text" placeholder="ROM (VD: 256GB)" value={s.specs?.storage || ''} onChange={(e) => updateStorageSpec(i, 'storage', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                      </div>
                     </div>
                   ))}
                 </div>
