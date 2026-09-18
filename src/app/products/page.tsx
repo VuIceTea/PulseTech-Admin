@@ -964,7 +964,7 @@ export default function ProductsPage() {
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-horizon-gray font-bold">+ VNĐ</span>
                         </div>
                         <div className="flex-1 relative">
-                          <input type="number" placeholder="Tồn kho riêng (Tùy chọn)" value={s.stock !== undefined ? s.stock.toString() : ''} onChange={(e) => updateStorage(i, 'stock', e.target.value ? parseInt(e.target.value, 10) : undefined)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" />
+                          <input type="number" placeholder="Tồn kho riêng (Tùy chọn)" value={s.stock != null ? s.stock.toString() : ''} onChange={(e) => updateStorage(i, 'stock', e.target.value ? parseInt(e.target.value, 10) : undefined)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-horizon-gray font-bold">SP</span>
                         </div>
                         <button type="button" onClick={() => removeStorage(i)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 p-2 rounded-lg transition-colors shrink-0">
