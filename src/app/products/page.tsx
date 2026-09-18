@@ -769,17 +769,18 @@ export default function ProductsPage() {
                       <label className="block text-sm font-bold text-black dark:text-white mb-2 whitespace-nowrap">
                         Số lượng Tồn kho <span className="text-red-500">*</span>
                       </label>
-                      {formData.storages && formData.storages.length > 0 ? (
+                      {formData.storages && formData.storages.length > 0 && formData.storages.every(s => s.stock != null) ? (
                         <input 
                           type="number" 
                           readOnly 
-                          title="Tồn kho được cộng tự động từ các biến thể dung lượng"
+                          title="Tổng tồn kho của tất cả biến thể đã nhập tồn kho riêng"
                           value={formData.storages.reduce((sum, s) => sum + (s.stock || 0), 0)} 
                           className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-bold text-gray-500 outline-none cursor-not-allowed shadow-sm" 
                         />
                       ) : (
                         <input required type="number" min="0" name="stock" value={formData.stock} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-bold text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
                       )}
+                      <p className="mt-2 text-xs text-gray-500">Biến thể để trống tồn kho sẽ dùng tồn kho tổng. Nhập 0 để đánh dấu biến thể hết hàng.</p>
                     </div>
                   </div>
 
