@@ -800,7 +800,7 @@ export default function ProductsPage() {
               </button>
             </div>
 
-            <form id={PRODUCT_FORM_ID} onSubmit={handleSubmit} className="p-6 md:p-8 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-8">
+            <form id={PRODUCT_FORM_ID} noValidate onSubmit={handleSubmit} className="p-6 md:p-8 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-8">
 
               {/* Section: Thông tin chung */}
               <div>
