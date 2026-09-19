@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import AdminPageSkeleton from "./AdminPageSkeleton";
 import { 
   BarChart3,
   FileText,
@@ -35,16 +36,6 @@ interface User {
   id: string;
   name: string;
   email: string;
-}
-
-function MetricSkeleton({ wide = false, large = false }: { wide?: boolean; large?: boolean }) {
-  return (
-    <span
-      role="status"
-      aria-label="Đang tải số liệu"
-      className={`block rounded-lg bg-gray-200 dark:bg-white/10 animate-pulse ${large ? 'h-9' : 'h-7'} ${wide ? 'w-40' : 'w-20'}`}
-    />
-  );
 }
 
 export default function AdminDashboardPage() {
@@ -88,6 +79,8 @@ export default function AdminDashboardPage() {
   const pendingOrders = orders.filter(o => o.status === 1).length;
   const totalCategories = new Set(products.map(product => product.category).filter(Boolean)).size;
 
+  if (loading) return <AdminPageSkeleton variant="dashboard" />;
+
   return (
     <div className="space-y-6 max-w-full">
       {/* 6 Stat Cards Grid */}
@@ -101,7 +94,7 @@ export default function AdminDashboardPage() {
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Tổng Doanh Thu</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {loading ? <MetricSkeleton wide /> : `${totalRevenue.toLocaleString('vi-VN')}đ`}
+              {`${totalRevenue.toLocaleString('vi-VN')}đ`}
             </p>
           </div>
         </Link>
@@ -114,7 +107,7 @@ export default function AdminDashboardPage() {
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Tổng Đơn Hàng</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {loading ? <MetricSkeleton /> : totalOrders.toLocaleString('vi-VN')}
+              {totalOrders.toLocaleString('vi-VN')}
             </p>
           </div>
         </Link>
@@ -127,7 +120,7 @@ export default function AdminDashboardPage() {
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Sản Phẩm Active</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {loading ? <MetricSkeleton /> : totalProducts.toLocaleString('vi-VN')}
+              {totalProducts.toLocaleString('vi-VN')}
             </p>
           </div>
         </Link>
@@ -145,7 +138,7 @@ export default function AdminDashboardPage() {
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Khách Hàng</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {loading ? <MetricSkeleton /> : totalUsers.toLocaleString('vi-VN')}
+              {totalUsers.toLocaleString('vi-VN')}
             </p>
           </div>
         </Link>
@@ -158,7 +151,7 @@ export default function AdminDashboardPage() {
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Đơn Chờ Xử Lý</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {loading ? <MetricSkeleton /> : pendingOrders.toLocaleString('vi-VN')}
+              {pendingOrders.toLocaleString('vi-VN')}
             </p>
           </div>
         </Link>
@@ -171,7 +164,7 @@ export default function AdminDashboardPage() {
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Danh Mục</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {loading ? <MetricSkeleton /> : totalCategories.toLocaleString('vi-VN')}
+              {totalCategories.toLocaleString('vi-VN')}
             </p>
           </div>
         </Link>
@@ -195,7 +188,7 @@ export default function AdminDashboardPage() {
           <div className="flex items-end justify-between mb-6">
             <div>
               <h2 className="text-[34px] font-bold text-horizon-dark dark:text-white leading-tight">
-                {loading ? <MetricSkeleton wide large /> : `${totalRevenue.toLocaleString('vi-VN')}đ`}
+                {`${totalRevenue.toLocaleString('vi-VN')}đ`}
               </h2>
               <div className="flex items-center gap-2 text-sm font-medium">
                 <span className="text-horizon-gray dark:text-horizon-dark-gray">Tổng chi tiêu</span>

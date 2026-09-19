@@ -5,6 +5,7 @@ import { Heart, Plus, Trash2, Edit2, X, PlusCircle, MinusCircle, Loader2 } from 
 import { toast } from "sonner";
 import Select from "react-select";
 import dynamic from "next/dynamic";
+import AdminPageSkeleton from "../AdminPageSkeleton";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 import "react-quill-new/dist/quill.snow.css";
@@ -527,6 +528,8 @@ export default function ProductsPage() {
       toast.error("Đã xảy ra lỗi khi xóa sản phẩm");
     }
   };
+
+  if (loading) return <AdminPageSkeleton variant="products" />;
 
   return (
     <div className="flex flex-col xl:flex-row gap-5 max-w-full">

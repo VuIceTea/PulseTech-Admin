@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { MoreHorizontal, CheckCircle2, XCircle, Clock, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
+import AdminPageSkeleton from "../AdminPageSkeleton";
 
 interface Order {
   id: string;
@@ -84,6 +85,8 @@ export default function OrdersPage() {
     const date = new Date(dateValue);
     return isNaN(date.getTime()) ? dateValue : date.toLocaleDateString('vi-VN');
   }
+
+  if (loading) return <AdminPageSkeleton variant="table" />;
 
   return (
     <div className="w-full">
