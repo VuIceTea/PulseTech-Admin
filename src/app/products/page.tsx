@@ -564,8 +564,8 @@ export default function ProductsPage() {
         <div>
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
             <h2 className="text-2xl font-bold text-black dark:text-white whitespace-nowrap">Sản phẩm Nổi bật</h2>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
-              <div className="relative w-full sm:w-64">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap xl:flex-nowrap items-start sm:items-center justify-end gap-3 w-full md:flex-1 md:min-w-0">
+              <div className="relative w-full sm:w-44 lg:w-40 xl:w-48 shrink-0">
                 <input
                   type="text"
                   placeholder="Tìm kiếm sản phẩm, hãng..."
@@ -574,7 +574,7 @@ export default function ProductsPage() {
                   className="w-full bg-white dark:bg-horizon-dark-card border border-gray-100 dark:border-white/10 rounded-full px-4 py-2 text-sm text-black dark:text-white outline-none focus:border-horizon-brand"
                 />
               </div>
-              <div className="relative flex items-center bg-gray-100 dark:bg-[#0B1437] p-1 rounded-full overflow-hidden text-sm font-medium shrink-0 h-[38px]">
+              <div className="relative flex items-center bg-gray-100 dark:bg-[#0B1437] p-1 rounded-full overflow-hidden text-sm font-medium shrink-0 h-[38px] max-w-full">
                 {/* Sliding indicator */}
                 <div
                   className="absolute bg-white dark:bg-horizon-brand rounded-full shadow-sm transition-all duration-300 ease-out h-[30px]"
