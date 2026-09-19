@@ -76,6 +76,7 @@ export default function AdminDashboardPage() {
   const totalOrders = orders.length;
   const totalUsers = users.length;
   const pendingOrders = orders.filter(o => o.status === 1).length;
+  const totalCategories = new Set(products.map(product => product.category).filter(Boolean)).size;
 
   return (
     <div className="space-y-6 max-w-full">
@@ -90,7 +91,7 @@ export default function AdminDashboardPage() {
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Tổng Doanh Thu</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {totalRevenue > 0 ? `${totalRevenue.toLocaleString('vi-VN')}đ` : "8.512.500đ"}
+              {loading ? "Đang tải..." : `${totalRevenue.toLocaleString('vi-VN')}đ`}
             </p>
           </div>
         </Link>
@@ -103,7 +104,7 @@ export default function AdminDashboardPage() {
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Tổng Đơn Hàng</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {totalOrders > 0 ? totalOrders : "642"}
+              {loading ? "Đang tải..." : totalOrders.toLocaleString('vi-VN')}
             </p>
           </div>
         </Link>
@@ -116,7 +117,7 @@ export default function AdminDashboardPage() {
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Sản Phẩm Active</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {totalProducts > 0 ? totalProducts : "574"}
+              {loading ? "Đang tải..." : totalProducts.toLocaleString('vi-VN')}
             </p>
           </div>
         </Link>
@@ -134,7 +135,7 @@ export default function AdminDashboardPage() {
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Khách Hàng</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {totalUsers > 0 ? totalUsers : "1,000"}
+              {loading ? "Đang tải..." : totalUsers.toLocaleString('vi-VN')}
             </p>
           </div>
         </Link>
@@ -147,7 +148,7 @@ export default function AdminDashboardPage() {
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Đơn Chờ Xử Lý</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {pendingOrders > 0 ? pendingOrders : "145"}
+              {loading ? "Đang tải..." : pendingOrders.toLocaleString('vi-VN')}
             </p>
           </div>
         </Link>
@@ -160,7 +161,7 @@ export default function AdminDashboardPage() {
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Danh Mục</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              4
+              {loading ? "Đang tải..." : totalCategories.toLocaleString('vi-VN')}
             </p>
           </div>
         </Link>
@@ -184,7 +185,7 @@ export default function AdminDashboardPage() {
           <div className="flex items-end justify-between mb-6">
             <div>
               <h2 className="text-[34px] font-bold text-horizon-dark dark:text-white leading-tight">
-                {totalRevenue > 0 ? `${totalRevenue.toLocaleString('vi-VN')}đ` : "937.500.000đ"}
+                {loading ? "Đang tải..." : `${totalRevenue.toLocaleString('vi-VN')}đ`}
               </h2>
               <div className="flex items-center gap-2 text-sm font-medium">
                 <span className="text-horizon-gray dark:text-horizon-dark-gray">Tổng chi tiêu</span>
