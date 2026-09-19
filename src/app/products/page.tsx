@@ -73,6 +73,73 @@ const categoryOptions = [
 
 const PRODUCT_FORM_ID = "product-form";
 
+const hasUsefulSpecValue = (value?: string) => {
+  const normalizedValue = value?.trim().toLocaleLowerCase('vi-VN');
+  return Boolean(normalizedValue && !['không có', 'không hỗ trợ'].includes(normalizedValue));
+};
+
+const getProductSpecificationEntries = (product: Product, storageIndex = 0) => {
+  const selectedStorage = product.storages?.[storageIndex];
+  const specs = { ...(product.specs || {}), ...(selectedStorage?.specs || {}) };
+  const isMemoryProduct = ['phone', 'tablet', 'laptop'].includes(product.category);
+  const accessoryType = (specs.accessoryType || '').toLocaleLowerCase('vi-VN');
+  const isCase = accessoryType.includes('ốp') || accessoryType.includes('bao da');
+  const isCable = accessoryType.includes('cáp') || accessoryType.includes('dây');
+  const isCharger = accessoryType.includes('củ sạc') || accessoryType.includes('sạc dự phòng') || accessoryType.includes('pin dự phòng');
+  const isHeadphone = accessoryType.includes('tai nghe');
+  const isAudioProduct = product.category === 'audio' || isHeadphone || accessoryType.includes('loa');
+
+  const entries: Array<[string, string | undefined]> = isMemoryProduct
+    ? [
+      ['Màn hình', specs.screen],
+      ['Hệ điều hành', specs.os],
+      ['Camera chính', specs.camera],
+      ['Camera trước', specs.frontCamera],
+      ['Vi xử lý (CPU)', specs.cpu],
+      ['RAM', specs.ram],
+      ['Bộ nhớ trong', selectedStorage?.name || specs.storage],
+      ['Pin', specs.battery]
+    ]
+    : isAudioProduct
+      ? [
+        ['Loại thiết bị', specs.accessoryType],
+        ['Kiểu tai nghe', isHeadphone ? specs.headphoneType : undefined],
+        ['Tính năng âm thanh', specs.audioFeature],
+        ['Chuẩn kết nối', specs.connectionType],
+        ['Thời lượng pin', specs.battery]
+      ]
+      : isCase
+        ? [
+          ['Loại phụ kiện', specs.accessoryType],
+          ['Chất liệu', specs.caseMaterial],
+          ['Tính năng', specs.caseFeature]
+        ]
+        : isCable
+          ? [
+            ['Loại phụ kiện', specs.accessoryType],
+            ['Chuẩn kết nối', specs.connectionType],
+            ['Chiều dài cáp', specs.cableLength || selectedStorage?.name],
+            ['Công suất hỗ trợ', specs.chargingPower]
+          ]
+          : isCharger
+            ? [
+              ['Loại phụ kiện', specs.accessoryType],
+              ['Chuẩn kết nối', specs.connectionType],
+              ['Công suất sạc', specs.chargingPower],
+              ['Số cổng sạc', specs.chargingPorts]
+            ]
+            : [
+              ['Loại phụ kiện', specs.accessoryType],
+              ['Chuẩn kết nối', specs.connectionType],
+              ['Công suất sạc', specs.chargingPower],
+              ['Chiều dài cáp', specs.cableLength],
+              ['Chất liệu', specs.caseMaterial],
+              ['Tính năng', specs.caseFeature]
+            ];
+
+  return entries.filter(([, value]) => isMemoryProduct ? Boolean(value?.trim()) : hasUsefulSpecValue(value));
+};
+
 const customSelectStyles = {
   control: (base: any, state: any) => ({
     ...base,
@@ -174,6 +241,13 @@ export default function ProductsPage() {
     storages: [],
     specs: {}
   });
+
+  const isMemoryFormProduct = ['phone', 'tablet', 'laptop'].includes(formData.category || '');
+  const formAccessoryType = (formData.specs?.accessoryType || '').toLocaleLowerCase('vi-VN');
+  const isFormCase = formAccessoryType.includes('ốp') || formAccessoryType.includes('bao da');
+  const isFormCable = formAccessoryType.includes('cáp') || formAccessoryType.includes('dây');
+  const isFormCharger = formAccessoryType.includes('củ sạc') || formAccessoryType.includes('sạc dự phòng') || formAccessoryType.includes('pin dự phòng');
+  const isFormHeadphone = formAccessoryType.includes('tai nghe');
 
   const loadProducts = () => {
     setLoading(true);
@@ -370,11 +444,11 @@ export default function ProductsPage() {
     if (invalidColorIndex !== -1) return `Vui lòng nhập tên cho biến thể màu thứ ${invalidColorIndex + 1}`;
 
     const storages = formData.storages || [];
-    if (storages.length === 0) return "Vui lòng thêm ít nhất một biến thể dung lượng (có thể đặt tên là Mặc định)";
+    if (storages.length === 0) return "Vui lòng thêm ít nhất một biến thể (có thể đặt tên là Mặc định)";
 
     for (let index = 0; index < storages.length; index += 1) {
       const storage = storages[index];
-      if (!storage.name?.trim()) return `Vui lòng nhập tên cho biến thể dung lượng thứ ${index + 1}`;
+      if (!storage.name?.trim()) return `Vui lòng nhập tên cho biến thể thứ ${index + 1}`;
       if (!Number.isFinite(Number(storage.priceOffset)) || Number(storage.priceOffset) < 0) {
         return `Giá cộng thêm của biến thể thứ ${index + 1} phải từ 0 trở lên`;
       }
@@ -985,25 +1059,25 @@ export default function ProductsPage() {
                 </div>
               </div>
 
-              {/* Section: Biến thể Dung lượng */}
+              {/* Section: Biến thể */}
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold text-black dark:text-white flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm">3</span> Biến thể Dung lượng <span className="text-red-500">*</span>
+                    <span className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm">3</span> Biến thể {isMemoryFormProduct ? 'Dung lượng' : 'Phiên bản'} <span className="text-red-500">*</span>
                   </h3>
                   <button type="button" onClick={addStorage} className="flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline">
-                    <PlusCircle className="h-4 w-4" /> Thêm dung lượng
+                    <PlusCircle className="h-4 w-4" /> Thêm {isMemoryFormProduct ? 'dung lượng' : 'phiên bản'}
                   </button>
                 </div>
 
                 <div className="space-y-3">
                   {(!formData.storages || formData.storages.length === 0) && (
-                    <div className="text-sm text-horizon-gray text-center py-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">Không có biến thể dung lượng</div>
+                    <div className="text-sm text-horizon-gray text-center py-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">Chưa có biến thể {isMemoryFormProduct ? 'dung lượng' : 'phiên bản'}</div>
                   )}
                   {formData.storages?.map((s, i) => (
                     <div key={i} className="flex flex-col gap-3 bg-gray-50 dark:bg-white/5 p-4 rounded-xl border border-gray-100 dark:border-white/10">
                       <div className="flex items-center gap-4">
-                        <input type="text" placeholder="Tên (VD: 256GB)" value={s.name} onChange={(e) => updateStorage(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" required />
+                        <input type="text" placeholder={isMemoryFormProduct ? 'Tên (VD: 256GB)' : 'Tên (VD: Tiêu chuẩn, 1m, 25W)'} value={s.name} onChange={(e) => updateStorage(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" required />
                         <div className="flex-1 relative">
                           <input type="number" min="0" placeholder="Cộng thêm giá" value={s.priceOffset != null ? s.priceOffset.toString() : ''} onChange={(e) => updateStorage(i, 'priceOffset', e.target.value ? parseInt(e.target.value, 10) : 0)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" required />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-horizon-gray font-bold">+ VNĐ</span>
@@ -1017,12 +1091,14 @@ export default function ProductsPage() {
                         </button>
                       </div>
                       
-                      {/* Thêm nhanh thông số riêng cho bản này */}
-                      <div className="flex gap-4 items-center">
-                        <label className="text-xs font-bold text-gray-500 w-24">Cấu hình riêng:</label>
-                        <input type="text" placeholder="RAM (VD: 8GB)" value={s.specs?.ram || ''} onChange={(e) => updateStorageSpec(i, 'ram', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
-                        <input type="text" placeholder="ROM (VD: 256GB)" value={s.specs?.storage || ''} onChange={(e) => updateStorageSpec(i, 'storage', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
-                      </div>
+                      {/* Chỉ thiết bị có bộ nhớ mới có cấu hình RAM/ROM riêng theo biến thể */}
+                      {isMemoryFormProduct && (
+                        <div className="flex gap-4 items-center">
+                          <label className="text-xs font-bold text-gray-500 w-24">Cấu hình riêng:</label>
+                          <input type="text" placeholder="RAM (VD: 8GB)" value={s.specs?.ram || ''} onChange={(e) => updateStorageSpec(i, 'ram', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                          <input type="text" placeholder="ROM (VD: 256GB)" value={s.specs?.storage || ''} onChange={(e) => updateStorageSpec(i, 'storage', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -1079,32 +1155,92 @@ export default function ProductsPage() {
                     <>
                       <div>
                         <label className="block text-xs font-bold text-black dark:text-white mb-1">Loại phụ kiện</label>
-                        <input type="text" value={formData.specs?.accessoryType || ""} onChange={(e) => handleSpecChange('accessoryType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                        <input type="text" placeholder="VD: Ốp lưng, Cáp sạc, Củ sạc, Tai nghe" value={formData.specs?.accessoryType || ""} onChange={(e) => handleSpecChange('accessoryType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
-                      <div>
-                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Chuẩn kết nối</label>
-                        <input type="text" value={formData.specs?.connectionType || ""} onChange={(e) => handleSpecChange('connectionType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Công suất sạc</label>
-                        <input type="text" value={formData.specs?.chargingPower || ""} onChange={(e) => handleSpecChange('chargingPower', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Chất liệu ốp</label>
-                        <input type="text" value={formData.specs?.caseMaterial || ""} onChange={(e) => handleSpecChange('caseMaterial', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
-                      </div>
+                      {isFormCase && (
+                        <>
+                          <div>
+                            <label className="block text-xs font-bold text-black dark:text-white mb-1">Chất liệu ốp</label>
+                            <input type="text" value={formData.specs?.caseMaterial || ""} onChange={(e) => handleSpecChange('caseMaterial', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-black dark:text-white mb-1">Tính năng ốp</label>
+                            <input type="text" value={formData.specs?.caseFeature || ""} onChange={(e) => handleSpecChange('caseFeature', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                          </div>
+                        </>
+                      )}
+                      {(isFormCable || isFormCharger) && (
+                        <div>
+                          <label className="block text-xs font-bold text-black dark:text-white mb-1">Chuẩn kết nối</label>
+                          <input type="text" value={formData.specs?.connectionType || ""} onChange={(e) => handleSpecChange('connectionType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                        </div>
+                      )}
+                      {isFormCable && (
+                        <>
+                          <div>
+                            <label className="block text-xs font-bold text-black dark:text-white mb-1">Chiều dài cáp</label>
+                            <input type="text" value={formData.specs?.cableLength || ""} onChange={(e) => handleSpecChange('cableLength', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-black dark:text-white mb-1">Công suất hỗ trợ</label>
+                            <input type="text" value={formData.specs?.chargingPower || ""} onChange={(e) => handleSpecChange('chargingPower', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                          </div>
+                        </>
+                      )}
+                      {isFormCharger && (
+                        <>
+                          <div>
+                            <label className="block text-xs font-bold text-black dark:text-white mb-1">Công suất sạc</label>
+                            <input type="text" value={formData.specs?.chargingPower || ""} onChange={(e) => handleSpecChange('chargingPower', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-black dark:text-white mb-1">Số cổng sạc</label>
+                            <input type="text" value={formData.specs?.chargingPorts || ""} onChange={(e) => handleSpecChange('chargingPorts', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                          </div>
+                        </>
+                      )}
+                      {isFormHeadphone && (
+                        <>
+                          <div>
+                            <label className="block text-xs font-bold text-black dark:text-white mb-1">Kiểu tai nghe</label>
+                            <input type="text" value={formData.specs?.headphoneType || ""} onChange={(e) => handleSpecChange('headphoneType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-black dark:text-white mb-1">Tính năng âm thanh</label>
+                            <input type="text" value={formData.specs?.audioFeature || ""} onChange={(e) => handleSpecChange('audioFeature', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-black dark:text-white mb-1">Chuẩn kết nối</label>
+                            <input type="text" value={formData.specs?.connectionType || ""} onChange={(e) => handleSpecChange('connectionType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-black dark:text-white mb-1">Thời lượng pin</label>
+                            <input type="text" value={formData.specs?.battery || ""} onChange={(e) => handleSpecChange('battery', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                          </div>
+                        </>
+                      )}
                     </>
                   )}
                   {/* Audio specifics */}
                   {formData.category === 'audio' && (
                     <>
                       <div>
-                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Loại tai nghe</label>
-                        <input type="text" value={formData.specs?.headphoneType || ""} onChange={(e) => handleSpecChange('headphoneType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Loại thiết bị âm thanh</label>
+                        <input type="text" placeholder="VD: Tai nghe, Loa Bluetooth" value={formData.specs?.accessoryType || ""} onChange={(e) => handleSpecChange('accessoryType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
+                      {isFormHeadphone && (
+                        <div>
+                          <label className="block text-xs font-bold text-black dark:text-white mb-1">Kiểu tai nghe</label>
+                          <input type="text" value={formData.specs?.headphoneType || ""} onChange={(e) => handleSpecChange('headphoneType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                        </div>
+                      )}
                       <div>
                         <label className="block text-xs font-bold text-black dark:text-white mb-1">Tính năng âm thanh</label>
                         <input type="text" value={formData.specs?.audioFeature || ""} onChange={(e) => handleSpecChange('audioFeature', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-black dark:text-white mb-1">Chuẩn kết nối</label>
+                        <input type="text" value={formData.specs?.connectionType || ""} onChange={(e) => handleSpecChange('connectionType', e.target.value)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" />
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-black dark:text-white mb-1">Thời lượng pin</label>
@@ -1244,7 +1380,9 @@ export default function ProductsPage() {
 
                     {viewingProduct.storages && viewingProduct.storages.length > 0 && (
                       <div>
-                        <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Dung lượng / Phiên bản</p>
+                        <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
+                          {['phone', 'tablet', 'laptop'].includes(viewingProduct.category) ? 'Dung lượng / Phiên bản' : 'Phiên bản'}
+                        </p>
                         <div className="flex flex-wrap gap-3">
                           {viewingProduct.storages.map((s, i) => (
                             <div key={i} onClick={() => setViewSelectedStorageIdx(i)} className={`flex flex-col justify-center bg-white dark:bg-[#0B1437] border px-4 py-3 rounded-xl transition-colors cursor-pointer text-center min-w-[100px] ${viewSelectedStorageIdx === i ? 'border-horizon-brand dark:border-horizon-brand' : 'border-gray-200 dark:border-white/10 hover:border-horizon-brand/50 dark:hover:border-horizon-brand/50'}`}>
@@ -1258,17 +1396,15 @@ export default function ProductsPage() {
                   </div>
                 )}
 
-                {viewingProduct.specs && Object.keys(viewingProduct.specs).length > 0 && (
+                {getProductSpecificationEntries(viewingProduct, viewSelectedStorageIdx).length > 0 && (
                   <div className="space-y-6">
                     <h3 className="text-xl font-bold text-black dark:text-white border-b border-gray-100 dark:border-white/10 pb-3">Thông số kỹ thuật</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                      {Object.entries(viewingProduct.specs).map(([key, val]) => (
-                        val ? (
-                          <div key={key} className="flex flex-col py-2 border-b border-gray-50 dark:border-white/5">
-                            <span className="text-xs text-gray-500 dark:text-gray-400 capitalize mb-1">{key}</span>
-                            <span className="text-sm font-bold text-black dark:text-white">{val}</span>
-                          </div>
-                        ) : null
+                      {getProductSpecificationEntries(viewingProduct, viewSelectedStorageIdx).map(([label, value]) => (
+                        <div key={label} className="flex flex-col py-2 border-b border-gray-50 dark:border-white/5">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</span>
+                          <span className="text-sm font-bold text-black dark:text-white">{value}</span>
+                        </div>
                       ))}
                     </div>
                   </div>
