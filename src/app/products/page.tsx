@@ -71,6 +71,8 @@ const categoryOptions = [
   { value: "audio", label: "Âm thanh" },
 ];
 
+const PRODUCT_FORM_ID = "product-form";
+
 const customSelectStyles = {
   control: (base: any, state: any) => ({
     ...base,
@@ -352,8 +354,47 @@ export default function ProductsPage() {
     }
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const validateProductForm = () => {
+    if (!formData.name?.trim()) return "Vui lòng nhập tên sản phẩm";
+    if (!formData.brand?.trim()) return "Vui lòng nhập hãng sản xuất";
+    if (!categoryOptions.some(option => option.value === formData.category)) return "Vui lòng chọn danh mục sản phẩm";
+
+    const originalPrice = Number(formData.originalPrice);
+    if (!Number.isFinite(originalPrice) || originalPrice <= 0) return "Giá gốc phải lớn hơn 0";
+
+    const discount = Number(formData.discount || 0);
+    if (!Number.isFinite(discount) || discount < 0 || discount > 100) return "Giảm giá phải nằm trong khoảng từ 0 đến 100%";
+    if (!formData.image?.trim()) return "Vui lòng tải ảnh đại diện sản phẩm";
+
+    const invalidColorIndex = (formData.colors || []).findIndex(color => !color.name?.trim());
+    if (invalidColorIndex !== -1) return `Vui lòng nhập tên cho biến thể màu thứ ${invalidColorIndex + 1}`;
+
+    const storages = formData.storages || [];
+    if (storages.length === 0) return "Vui lòng thêm ít nhất một biến thể dung lượng (có thể đặt tên là Mặc định)";
+
+    for (let index = 0; index < storages.length; index += 1) {
+      const storage = storages[index];
+      if (!storage.name?.trim()) return `Vui lòng nhập tên cho biến thể dung lượng thứ ${index + 1}`;
+      if (!Number.isFinite(Number(storage.priceOffset)) || Number(storage.priceOffset) < 0) {
+        return `Giá cộng thêm của biến thể thứ ${index + 1} phải từ 0 trở lên`;
+      }
+      if (!Number.isInteger(Number(storage.stock)) || (storage.stock ?? -1) < 0) {
+        return `Tồn kho của biến thể thứ ${index + 1} phải là số nguyên từ 0 trở lên`;
+      }
+    }
+
+    return null;
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const validationError = validateProductForm();
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -367,6 +408,10 @@ export default function ProductsPage() {
 
       const payload = {
         ...formData,
+        name: formData.name?.trim(),
+        brand: formData.brand?.trim(),
+        colors: (formData.colors || []).map(color => ({ ...color, name: color.name.trim() })),
+        storages: (formData.storages || []).map(storage => ({ ...storage, name: storage.name.trim() })),
         stock: (formData.storages || []).reduce((sum, storage) => sum + (storage.stock ?? 0), 0),
         basePrice: computedBasePrice,
         id: isEditing ? editingProduct.id : undefined
@@ -681,7 +726,7 @@ export default function ProductsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 md:p-8 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-8">
+            <form id={PRODUCT_FORM_ID} onSubmit={handleSubmit} className="p-6 md:p-8 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-8">
 
               {/* Section: Thông tin chung */}
               <div>
@@ -758,7 +803,7 @@ export default function ProductsPage() {
                       <label className="block text-sm font-bold text-black dark:text-white mb-2 whitespace-nowrap">
                         Giá gốc (VNĐ) <span className="text-red-500">*</span>
                       </label>
-                      <input required type="number" min="0" name="originalPrice" value={formData.originalPrice} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-mono text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
+                      <input required type="number" min="1" name="originalPrice" value={formData.originalPrice} onChange={handleInputChange} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-mono text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm" />
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-black dark:text-white mb-2 whitespace-nowrap">
@@ -944,7 +989,7 @@ export default function ProductsPage() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold text-black dark:text-white flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm">3</span> Biến thể Dung lượng (Tùy chọn)
+                    <span className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm">3</span> Biến thể Dung lượng <span className="text-red-500">*</span>
                   </h3>
                   <button type="button" onClick={addStorage} className="flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline">
                     <PlusCircle className="h-4 w-4" /> Thêm dung lượng
@@ -960,7 +1005,7 @@ export default function ProductsPage() {
                       <div className="flex items-center gap-4">
                         <input type="text" placeholder="Tên (VD: 256GB)" value={s.name} onChange={(e) => updateStorage(i, 'name', e.target.value)} className="flex-1 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-black dark:text-white outline-none" required />
                         <div className="flex-1 relative">
-                          <input type="number" placeholder="Cộng thêm giá" value={s.priceOffset ? s.priceOffset.toString() : ''} onChange={(e) => updateStorage(i, 'priceOffset', e.target.value ? parseInt(e.target.value, 10) : 0)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" required />
+                          <input type="number" min="0" placeholder="Cộng thêm giá" value={s.priceOffset != null ? s.priceOffset.toString() : ''} onChange={(e) => updateStorage(i, 'priceOffset', e.target.value ? parseInt(e.target.value, 10) : 0)} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" required />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-horizon-gray font-bold">+ VNĐ</span>
                         </div>
                         <div className="flex-1 relative">
@@ -1076,7 +1121,7 @@ export default function ProductsPage() {
               <button type="button" onClick={closeModal} className="flex-1 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-black dark:text-white font-bold py-3.5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/10 transition-colors shadow-sm text-base cursor-pointer">
                 Hủy bỏ
               </button>
-              <button type="submit" onClick={handleSubmit} disabled={isSubmitting || isUploading} className="flex-1 bg-horizon-brand text-white font-bold py-3.5 rounded-xl hover:bg-horizon-brand/90 transition-colors shadow-lg shadow-horizon-brand/30 disabled:opacity-70 text-base cursor-pointer">
+              <button type="submit" form={PRODUCT_FORM_ID} disabled={isSubmitting || isUploading} className="flex-1 bg-horizon-brand text-white font-bold py-3.5 rounded-xl hover:bg-horizon-brand/90 transition-colors shadow-lg shadow-horizon-brand/30 disabled:opacity-70 text-base cursor-pointer">
                 {isSubmitting ? "Đang lưu hệ thống..." : isUploading ? "Đang tải ảnh..." : "Lưu Sản Phẩm & Biến thể"}
               </button>
             </div>
