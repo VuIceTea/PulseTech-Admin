@@ -3,6 +3,7 @@
 import React, { useEffect, useState, FormEvent } from "react";
 import { Plus, Trash2, Edit2, X, Ticket, Calendar, Percent, CircleDollarSign } from "lucide-react";
 import { toast } from "sonner";
+import AdminPageSkeleton from "../AdminPageSkeleton";
 
 interface Coupon {
   id: string;
@@ -168,6 +169,8 @@ export default function VouchersPage() {
       toast.error("Đã xảy ra lỗi khi xóa");
     }
   };
+
+  if (loading) return <AdminPageSkeleton variant="cards" />;
 
   return (
     <div className="flex flex-col gap-6 max-w-full">

@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import AdminPageSkeleton from "./AdminPageSkeleton";
 import { 
   BarChart3,
   FileText,
@@ -75,6 +77,9 @@ export default function AdminDashboardPage() {
   const totalOrders = orders.length;
   const totalUsers = users.length;
   const pendingOrders = orders.filter(o => o.status === 1).length;
+  const totalCategories = new Set(products.map(product => product.category).filter(Boolean)).size;
+
+  if (loading) return <AdminPageSkeleton variant="dashboard" />;
 
   return (
     <div className="space-y-6 max-w-full">
@@ -82,46 +87,46 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         
         {/* Total Revenue */}
-        <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+        <Link href="/orders" aria-label="Xem danh sách đơn hàng và doanh thu" className="group bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer">
           <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
             <BarChart3 className="h-7 w-7" />
           </div>
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Tổng Doanh Thu</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {totalRevenue > 0 ? `${totalRevenue.toLocaleString('vi-VN')}đ` : "8.512.500đ"}
+              {`${totalRevenue.toLocaleString('vi-VN')}đ`}
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Total Orders */}
-        <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+        <Link href="/orders" aria-label="Xem tất cả đơn hàng" className="group bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer">
           <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
             <FileText className="h-7 w-7" />
           </div>
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Tổng Đơn Hàng</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {totalOrders > 0 ? totalOrders : "642"}
+              {totalOrders.toLocaleString('vi-VN')}
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Total Products */}
-        <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+        <Link href="/products" aria-label="Xem danh sách sản phẩm" className="group bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer">
           <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
             <BarChart className="h-7 w-7" />
           </div>
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Sản Phẩm Active</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {totalProducts > 0 ? totalProducts : "574"}
+              {totalProducts.toLocaleString('vi-VN')}
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Total Customers */}
-        <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+        <Link href="/customers" aria-label="Xem danh sách khách hàng" className="group bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer">
           <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
             <div className="grid grid-cols-2 gap-[2px]">
               <div className="w-2.5 h-2.5 bg-horizon-brand dark:bg-white rounded-[2px]" />
@@ -133,36 +138,36 @@ export default function AdminDashboardPage() {
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Khách Hàng</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {totalUsers > 0 ? totalUsers : "1,000"}
+              {totalUsers.toLocaleString('vi-VN')}
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Pending Orders */}
-        <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+        <Link href="/orders" aria-label="Xem các đơn hàng chờ xử lý" className="group bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer">
           <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
             <CheckSquare className="h-7 w-7" />
           </div>
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Đơn Chờ Xử Lý</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {pendingOrders > 0 ? pendingOrders : "145"}
+              {pendingOrders.toLocaleString('vi-VN')}
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Categories */}
-        <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+        <Link href="/products" aria-label="Xem các danh mục sản phẩm" className="group bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer">
           <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
             <Home className="h-7 w-7" />
           </div>
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Danh Mục</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              4
+              {totalCategories.toLocaleString('vi-VN')}
             </p>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Charts Grid */}
@@ -183,7 +188,7 @@ export default function AdminDashboardPage() {
           <div className="flex items-end justify-between mb-6">
             <div>
               <h2 className="text-[34px] font-bold text-horizon-dark dark:text-white leading-tight">
-                {totalRevenue > 0 ? `${totalRevenue.toLocaleString('vi-VN')}đ` : "937.500.000đ"}
+                {`${totalRevenue.toLocaleString('vi-VN')}đ`}
               </h2>
               <div className="flex items-center gap-2 text-sm font-medium">
                 <span className="text-horizon-gray dark:text-horizon-dark-gray">Tổng chi tiêu</span>

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
+import AdminPageSkeleton from "../AdminPageSkeleton";
 
 interface User {
   id: string;
@@ -27,6 +28,8 @@ export default function CustomersPage() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  if (loading) return <AdminPageSkeleton variant="table" />;
 
   return (
     <div className="w-full">
