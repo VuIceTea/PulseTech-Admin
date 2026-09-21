@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { MoreHorizontal, CheckCircle2, XCircle, Clock, ChevronDown } from "lucide-react";
+import { MoreHorizontal, CheckCircle2, XCircle, Clock, ChevronDown, X } from "lucide-react";
 import { toast } from "sonner";
 import AdminPageSkeleton from "../AdminPageSkeleton";
 
@@ -10,9 +10,20 @@ interface Order {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  address?: string;
+  paymentMethod?: string;
   totalPrice: number;
   status: number;
   createdAt: string;
+  items?: Array<{
+    productId: string;
+    productName: string;
+    price: number;
+    qty: number;
+    image?: string;
+    color?: string;
+    storage?: string;
+  }>;
 }
 
 export default function OrdersPage() {
@@ -20,6 +31,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const loadOrders = () => {
     setLoading(true);
@@ -40,20 +52,28 @@ export default function OrdersPage() {
   }, []);
 
   const handleUpdateStatus = async (orderId: string, newStatus: number) => {
+    const order = orders.find(item => item.id === orderId);
+    if (order && !canChangeStatus(order.status, newStatus)) {
+      toast.error("Trạng thái này không hợp lệ với tiến trình hiện tại của đơn hàng");
+      return;
+    }
     setUpdatingId(orderId);
     setOpenDropdownId(null);
     try {
       const res = await fetch(`/backend-api/orders/${orderId}/status?status=${newStatus}`, {
         method: "PATCH"
       });
-      if (!res.ok) throw new Error("Failed to update status");
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Failed to update status");
+      }
 
       toast.success("Cập nhật trạng thái thành công!");
       // Update local state without full reload
       setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
     } catch (err) {
       console.error(err);
-      toast.error("Lỗi khi cập nhật trạng thái");
+      toast.error(err instanceof Error ? err.message : "Lỗi khi cập nhật trạng thái");
     } finally {
       setUpdatingId(null);
     }
@@ -71,6 +91,13 @@ export default function OrdersPage() {
     return statusMap.find(s => s.value === status) || statusMap[4];
   }
 
+  const canChangeStatus = (currentStatus: number, nextStatus: number) => {
+    if (currentStatus === nextStatus) return false;
+    if (currentStatus === 3 || currentStatus === 4) return false;
+    if (nextStatus === 4) return currentStatus <= 1;
+    return nextStatus === currentStatus + 1;
+  };
+
   const formatDate = (dateValue: any) => {
     if (!dateValue) return "N/A";
 
@@ -80,10 +107,10 @@ export default function OrdersPage() {
 
     if (Array.isArray(dateValue)) {
       const [year, month, day, hour = 0, min = 0, sec = 0] = dateValue;
-      return new Date(year, month - 1, day, hour, min, sec).toLocaleDateString('vi-VN');
+      return new Date(year, month - 1, day, hour, min, sec).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     }
     const date = new Date(dateValue);
-    return isNaN(date.getTime()) ? dateValue : date.toLocaleDateString('vi-VN');
+    return isNaN(date.getTime()) ? dateValue : date.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit' });
   }
 
   if (loading) return <AdminPageSkeleton variant="table" />;
@@ -92,7 +119,7 @@ export default function OrdersPage() {
     <div className="w-full">
       <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] w-full">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-xl font-bold text-horizon-dark dark:text-white">Quản lý Đơn hàng (Complex Table)</h2>
+          <h2 className="text-xl font-bold text-horizon-dark dark:text-white">Quản lý Đơn hàng</h2>
           <button className="h-9 w-9 rounded-xl bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand hover:bg-[#E9EDF7] transition-colors">
             <MoreHorizontal className="h-5 w-5" />
           </button>
@@ -107,12 +134,13 @@ export default function OrdersPage() {
                 <th className="py-4 px-2 text-xs font-bold text-horizon-gray dark:text-horizon-dark-gray uppercase tracking-wider">Tổng tiền</th>
                 <th className="py-4 px-2 text-xs font-bold text-horizon-gray dark:text-horizon-dark-gray uppercase tracking-wider">Ngày Đặt</th>
                 <th className="py-4 px-2 text-xs font-bold text-horizon-gray dark:text-horizon-dark-gray uppercase tracking-wider">Tiến Độ</th>
+                <th className="py-4 px-2 text-xs font-bold text-horizon-gray dark:text-horizon-dark-gray uppercase tracking-wider">Chi tiết</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-white/5">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-horizon-gray dark:text-horizon-dark-gray">
+                  <td colSpan={6} className="py-12 text-center text-horizon-gray dark:text-horizon-dark-gray">
                     Đang tải dữ liệu...
                   </td>
                 </tr>
@@ -145,16 +173,19 @@ export default function OrdersPage() {
                         <>
                           <div className="fixed inset-0 z-10" onClick={() => setOpenDropdownId(null)} />
                           <div className="absolute top-full left-2 mt-1 w-48 bg-white dark:bg-horizon-dark-card border border-gray-100 dark:border-white/10 rounded-xl shadow-lg z-20 py-2">
-                            {statusMap.map(s => (
+                            {statusMap.map(s => {
+                              const disabled = !canChangeStatus(order.status, s.value);
+                              return (
                               <button
                                 key={s.value}
                                 onClick={() => handleUpdateStatus(order.id, s.value)}
-                                className={`w-full text-left flex items-center gap-2 px-4 py-2 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${order.status === s.value ? 'bg-[#F4F7FE] dark:bg-horizon-dark-bg' : ''}`}
+                                disabled={disabled}
+                                className={`w-full text-left flex items-center gap-2 px-4 py-2 transition-colors ${order.status === s.value ? 'bg-[#F4F7FE] dark:bg-horizon-dark-bg' : ''} ${disabled ? 'cursor-not-allowed opacity-40' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
                               >
                                 {s.icon}
                                 <span className="text-sm font-medium text-horizon-dark dark:text-white">{s.text}</span>
                               </button>
-                            ))}
+                            )})}
                           </div>
                         </>
                       )}
@@ -181,6 +212,14 @@ export default function OrdersPage() {
                         </div>
                       </div>
                     </td>
+                    <td className="py-4 px-2">
+                      <button
+                        onClick={() => setSelectedOrder(order)}
+                        className="rounded-xl bg-[#F4F7FE] px-4 py-2 text-sm font-bold text-horizon-brand transition-colors hover:bg-[#E9EDF7] dark:bg-horizon-dark-bg dark:hover:bg-white/10"
+                      >
+                        Xem
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
@@ -188,6 +227,63 @@ export default function OrdersPage() {
           </table>
         </div>
       </div>
+
+      {selectedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[24px] bg-white p-6 shadow-2xl dark:bg-horizon-dark-card">
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-2xl font-bold text-horizon-dark dark:text-white">Chi tiết đơn hàng #{selectedOrder.id}</h3>
+                <p className="mt-1 text-sm font-medium text-horizon-gray">Đặt ngày: {formatDate(selectedOrder.createdAt)}</p>
+              </div>
+              <button onClick={() => setSelectedOrder(null)} className="rounded-full bg-[#F4F7FE] p-2 text-horizon-gray hover:bg-[#E9EDF7]">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl bg-[#F8FAFF] p-4 dark:bg-horizon-dark-bg">
+                <h4 className="mb-3 text-sm font-bold uppercase text-horizon-gray">Thông tin khách hàng</h4>
+                <div className="space-y-2 text-sm font-semibold text-horizon-dark dark:text-white">
+                  <p>Người nhận: {selectedOrder.customerName || "Chưa cập nhật"}</p>
+                  <p>Email: {selectedOrder.customerEmail || "Chưa cập nhật"}</p>
+                  <p>Số điện thoại: {selectedOrder.customerPhone || "Chưa cập nhật"}</p>
+                  <p>Địa chỉ: {selectedOrder.address || "Chưa cập nhật"}</p>
+                </div>
+              </div>
+              <div className="rounded-2xl bg-[#F8FAFF] p-4 dark:bg-horizon-dark-bg">
+                <h4 className="mb-3 text-sm font-bold uppercase text-horizon-gray">Thanh toán & trạng thái</h4>
+                <div className="space-y-2 text-sm font-semibold text-horizon-dark dark:text-white">
+                  <p>Thanh toán: {selectedOrder.paymentMethod || "Chưa cập nhật"}</p>
+                  <p>Trạng thái: {getStatusDisplay(selectedOrder.status).text}</p>
+                  <p>Tổng tiền: <span className="text-horizon-brand">{selectedOrder.totalPrice?.toLocaleString('vi-VN')} đ</span></p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <h4 className="mb-3 text-sm font-bold uppercase text-horizon-gray">Sản phẩm đã đặt</h4>
+              <div className="space-y-3">
+                {(selectedOrder.items || []).length > 0 ? selectedOrder.items!.map((item, index) => (
+                  <div key={`${item.productId}-${index}`} className="flex items-center gap-4 rounded-2xl border border-gray-100 p-4 dark:border-white/10">
+                    <img src={item.image || "/placeholder.png"} alt={item.productName} className="h-16 w-16 rounded-xl object-contain bg-[#F8FAFF]" />
+                    <div className="flex-1">
+                      <p className="font-bold text-horizon-dark dark:text-white">{item.productName}</p>
+                      <p className="mt-1 text-sm text-horizon-gray">{[item.color, item.storage].filter(Boolean).join(" | ") || "Không có biến thể"}</p>
+                      <p className="mt-1 text-sm font-semibold text-horizon-dark dark:text-white">x{item.qty}</p>
+                    </div>
+                    <div className="text-right font-bold text-horizon-brand">{item.price?.toLocaleString('vi-VN')} đ</div>
+                  </div>
+                )) : (
+                  <div className="rounded-2xl bg-[#F8FAFF] p-6 text-center text-sm font-semibold text-horizon-gray">
+                    Đơn hàng này chưa có dữ liệu sản phẩm chi tiết.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

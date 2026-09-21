@@ -228,11 +228,6 @@ export default function VouchersPage() {
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F4F7FE] dark:bg-white/10 rounded-full text-horizon-brand dark:text-white font-mono font-bold text-lg tracking-wider mb-2 border border-horizon-brand/20 border-dashed">
                       <Ticket className="h-4 w-4" />
                       {coupon.code}
-                      {(coupon.count ?? 0) > 1 && (
-                        <span className="ml-2 rounded-full bg-horizon-brand px-2 py-0.5 text-[11px] font-extrabold text-white">
-                          x{coupon.count}
-                        </span>
-                      )}
                     </div>
                     <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray line-clamp-2">
                       {coupon.description}
