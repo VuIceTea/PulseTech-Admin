@@ -212,7 +212,7 @@ export default function ProductsPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
-  
+
   // Viewer state
   const [viewSelectedImage, setViewSelectedImage] = useState<string | null>(null);
   const [viewSelectedColorIdx, setViewSelectedColorIdx] = useState<number>(0);
@@ -611,7 +611,7 @@ export default function ProductsPage() {
                 className="w-28 sm:w-32 bg-white dark:bg-horizon-dark-card border border-gray-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-black dark:text-white outline-none focus:border-horizon-brand transition-colors"
               />
             </div>
-            
+
             <div className="flex items-center gap-2 flex-wrap">
               <button onClick={() => { setMinPrice(""); setMaxPrice(""); setCurrentPage(1); }} className="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-white/20 transition-colors cursor-pointer">Tất cả giá</button>
               <button onClick={() => { setMinPrice(0); setMaxPrice(5000000); setCurrentPage(1); }} className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-colors cursor-pointer ${minPrice === 0 && maxPrice === 5000000 ? 'bg-horizon-brand text-white border-horizon-brand' : 'bg-white dark:bg-[#0B1437] border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-horizon-brand'}`}>&lt; 5 Triệu</button>
@@ -862,10 +862,10 @@ export default function ProductsPage() {
                       <label className="block text-sm font-bold text-black dark:text-white mb-2">
                         Danh mục <span className="text-red-500">*</span>
                       </label>
-                      <Select 
+                      <Select
                         options={categoryOptions}
                         value={categoryOptions.find(o => o.value === formData.category) || null}
-                        onChange={(option: any) => setFormData({...formData, category: option ? option.value : ''})}
+                        onChange={(option: any) => setFormData({ ...formData, category: option ? option.value : '' })}
                         placeholder="Chọn danh mục"
                         styles={customSelectStyles}
                         isSearchable={false}
@@ -890,18 +890,17 @@ export default function ProductsPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-black dark:text-white mb-2 whitespace-nowrap">
-                        Số lượng Tồn kho <span className="text-red-500">*</span>
+                        Tồn kho <span className="text-red-500">*</span>
                       </label>
                       {(
-                        <input 
-                          type="number" 
-                          readOnly 
+                        <input
+                          type="number"
+                          readOnly
                           title="Tổng tồn kho của tất cả biến thể đã nhập tồn kho riêng"
                           value={(formData.storages || []).reduce((sum, s) => sum + (s.stock ?? 0), 0)}
-                          className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-bold text-gray-500 outline-none cursor-not-allowed shadow-sm" 
+                          className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-bold text-gray-500 outline-none cursor-not-allowed shadow-sm"
                         />
                       )}
-                      <p className="mt-2 text-xs text-gray-500">Tồn kho cha là tổng tự tính. Chỉ nhập tồn kho ở từng biến thể bên dưới; nhập 0 khi biến thể hết hàng. Sản phẩm không có dung lượng hãy thêm biến thể Mặc định.</p>
                     </div>
                   </div>
 
@@ -909,11 +908,11 @@ export default function ProductsPage() {
                     <label className="block text-sm font-bold text-black dark:text-white mb-2">
                       Đặc điểm nổi bật (Mô tả sản phẩm)
                     </label>
-                    <textarea 
-                      name="description" 
-                      value={formData.description || ""} 
-                      onChange={handleInputChange} 
-                      placeholder="Nhập các đặc điểm nổi bật, thiết kế sang trọng, hiệu năng..." 
+                    <textarea
+                      name="description"
+                      value={formData.description || ""}
+                      onChange={handleInputChange}
+                      placeholder="Nhập các đặc điểm nổi bật, thiết kế sang trọng, hiệu năng..."
                       rows={4}
                       className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-black dark:text-white outline-none focus:border-horizon-brand transition-colors shadow-sm resize-y"
                     />
@@ -924,10 +923,10 @@ export default function ProductsPage() {
                       Nội dung chi tiết (Bài viết)
                     </label>
                     <div className="bg-white dark:bg-[#0B1437] rounded-xl overflow-hidden border border-gray-200 dark:border-white/10">
-                      <ReactQuill 
-                        theme="snow" 
-                        value={formData.content || ""} 
-                        onChange={(val) => setFormData(p => ({ ...p, content: val }))} 
+                      <ReactQuill
+                        theme="snow"
+                        value={formData.content || ""}
+                        onChange={(val) => setFormData(p => ({ ...p, content: val }))}
                         className="h-64 mb-12 text-black dark:text-white"
                       />
                     </div>
@@ -1012,7 +1011,7 @@ export default function ProductsPage() {
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-horizon-gray font-bold">+ VNĐ</span>
                           </div>
                           <input type="color" value={c.hex} onChange={(e) => updateColor(i, 'hex', e.target.value)} className="w-10 h-10 rounded cursor-pointer shrink-0" title="Mã màu" />
-                          
+
                           <div className="relative shrink-0">
                             <label className="flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/10 transition-colors overflow-hidden" title="Tải ảnh đại diện nhỏ">
                               {c.image ? <img src={getImageUrl(c.image)} alt="Color img" className="w-full h-full object-contain" /> : <span className="text-[10px] font-bold text-horizon-gray">Thumb</span>}
@@ -1028,7 +1027,7 @@ export default function ProductsPage() {
                             <MinusCircle className="h-5 w-5" />
                           </button>
                         </div>
-                        
+
                         {/* Thư viện ảnh của màu này */}
                         <div className="flex flex-col gap-2 p-3 bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl">
                           <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Thư viện ảnh riêng cho màu này</label>
@@ -1093,7 +1092,7 @@ export default function ProductsPage() {
                           <MinusCircle className="h-5 w-5" />
                         </button>
                       </div>
-                      
+
                       {/* Chỉ thiết bị có bộ nhớ mới có cấu hình RAM/ROM riêng theo biến thể */}
                       {isMemoryFormProduct && (
                         <div className="flex gap-4 items-center">
@@ -1306,7 +1305,7 @@ export default function ProductsPage() {
                       }
                     });
                   }
-                  
+
                   // Ensure main image is included and not duplicated
                   const mainImage = viewingProduct.imageUrl || viewingProduct.image;
                   if (mainImage && !allImages.includes(mainImage)) {
