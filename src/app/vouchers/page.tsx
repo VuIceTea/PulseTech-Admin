@@ -19,6 +19,7 @@ interface Coupon {
   maxUsage: number;
   isActive: boolean;
   assignedEmails?: string[];
+  count?: number;
 }
 
 interface CouponFormState extends Partial<Coupon> {
@@ -130,12 +131,26 @@ export default function VouchersPage() {
     try {
       const isEditing = !!editingCoupon;
       const url = isEditing ? `/backend-api/orders/coupons/${editingCoupon.id}` : `/backend-api/orders/coupons`;
+      const normalizedAllCustomerEmails = users
+        .map(user => user.email)
+        .filter(Boolean)
+        .map(email => String(email).trim().toLowerCase());
+      const selectedEmails = formData.targetAudience === 'public'
+        ? normalizedAllCustomerEmails
+        : formData.selectedEmails;
+
+      if (selectedEmails.length === 0) {
+        toast.error(formData.targetAudience === 'public'
+          ? "Chưa có khách hàng nào để phát hành voucher."
+          : "Vui lòng chọn ít nhất 1 khách hàng nhận voucher.");
+        return;
+      }
       
       const payload: any = { 
         ...formData, 
         id: isEditing ? editingCoupon.id : undefined,
         code: formData.code?.toUpperCase(),
-        assignedEmails: formData.targetAudience === 'specific' && formData.selectedEmails.length > 0 ? formData.selectedEmails : null
+        assignedEmails: selectedEmails
       };
       
       delete payload.targetAudience;
@@ -213,6 +228,11 @@ export default function VouchersPage() {
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F4F7FE] dark:bg-white/10 rounded-full text-horizon-brand dark:text-white font-mono font-bold text-lg tracking-wider mb-2 border border-horizon-brand/20 border-dashed">
                       <Ticket className="h-4 w-4" />
                       {coupon.code}
+                      {(coupon.count ?? 0) > 1 && (
+                        <span className="ml-2 rounded-full bg-horizon-brand px-2 py-0.5 text-[11px] font-extrabold text-white">
+                          x{coupon.count}
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray line-clamp-2">
                       {coupon.description}
