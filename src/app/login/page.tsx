@@ -1,11 +1,36 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { FormEvent, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { readApiError, saveAdminSession } from "../../lib/adminAuth";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    setSubmitting(true);
+    try {
+      const response = await fetch("/backend-api/auth/login", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) throw new Error(await readApiError(response));
+      const session = await response.json();
+      if (!session.roles?.includes("ADMIN")) throw new Error("Tài khoản này không có quyền truy cập trang quản trị");
+      saveAdminSession(session);
+      toast.success("Đăng nhập quản trị thành công");
+      router.replace("/");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không thể đăng nhập");
+    } finally { setSubmitting(false); }
+  };
 
   return (
     <div className="flex min-h-screen bg-white dark:bg-[#0B1437]">
@@ -35,11 +60,14 @@ export default function LoginPage() {
             <div className="h-px bg-gray-200 dark:bg-white/10 flex-1" />
           </div>
 
-          <form className="space-y-5">
+          <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
               <label className="block text-sm font-medium text-horizon-dark dark:text-white mb-2">Email*</label>
               <input 
                 type="email" 
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
                 placeholder="mail@pulsetech.com" 
                 className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3.5 text-sm text-horizon-dark dark:text-white placeholder:text-horizon-gray outline-none focus:border-horizon-brand transition-colors"
               />
@@ -50,6 +78,9 @@ export default function LoginPage() {
               <div className="relative">
                 <input 
                   type={showPassword ? "text" : "password"} 
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
                   placeholder="Tối thiểu 8 ký tự" 
                   className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-2xl pl-4 pr-12 py-3.5 text-sm text-horizon-dark dark:text-white placeholder:text-horizon-gray outline-none focus:border-horizon-brand transition-colors"
                 />
@@ -71,8 +102,8 @@ export default function LoginPage() {
               <Link href="#" className="text-sm font-medium text-horizon-brand hover:underline">Quên mật khẩu?</Link>
             </div>
 
-            <button type="submit" className="w-full bg-horizon-brand hover:bg-horizon-brand/90 text-white font-bold py-3.5 rounded-2xl transition-colors mt-2">
-              Đăng nhập
+            <button type="submit" disabled={submitting} className="w-full bg-horizon-brand hover:bg-horizon-brand/90 disabled:opacity-60 text-white font-bold py-3.5 rounded-2xl transition-colors mt-2">
+              {submitting ? "Đang đăng nhập..." : "Đăng nhập"}
             </button>
           </form>
 

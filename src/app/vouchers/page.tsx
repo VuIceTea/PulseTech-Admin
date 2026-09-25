@@ -4,6 +4,7 @@ import React, { useEffect, useState, FormEvent } from "react";
 import { Plus, Trash2, Edit2, X, Ticket, Calendar, Percent, CircleDollarSign } from "lucide-react";
 import { toast } from "sonner";
 import AdminPageSkeleton from "../AdminPageSkeleton";
+import { adminFetch } from "../../lib/adminAuth";
 
 interface Coupon {
   id: string;
@@ -74,7 +75,7 @@ export default function VouchersPage() {
   useEffect(() => {
     loadCoupons();
     // Load users for specific assignment
-    fetch("/backend-api/auth/users")
+    adminFetch("/backend-api/auth/admin/users")
       .then(res => res.ok ? res.json() : [])
       .then(data => setUsers(Array.isArray(data) ? data : []))
       .catch(console.error);
