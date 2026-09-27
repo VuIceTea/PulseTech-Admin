@@ -62,13 +62,13 @@ export default function LoginPage() {
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
-              <label className="block text-sm font-medium text-horizon-dark dark:text-white mb-2">Email*</label>
+              <label className="block text-sm font-medium text-horizon-dark dark:text-white mb-2">Tên đăng nhập hoặc Email*</label>
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 required
-                placeholder="mail@pulsetech.com"
+                placeholder="admin hoặc mail@pulsetech.com"
                 className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3.5 text-sm text-horizon-dark dark:text-white placeholder:text-horizon-gray outline-none focus:border-horizon-brand transition-colors"
               />
             </div>
