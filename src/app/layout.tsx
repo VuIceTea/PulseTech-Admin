@@ -24,7 +24,7 @@ import {
   ShieldCheck,
   ArrowsCounterClockwise,
   Lightning,
-  ClockHistory
+  Clock
 } from "@phosphor-icons/react";
 import "./globals.css";
 import { Toaster } from "sonner";
@@ -149,7 +149,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     { name: "Bảo Hành", href: "/warranties", icon: ShieldCheck },
     { name: "Đổi Trả", href: "/returns", icon: ArrowsCounterClockwise },
     { name: "Flash Sale", href: "/flash-sales", icon: Lightning },
-    { name: "Nhật Ký Kho", href: "/inventory-logs", icon: ClockHistory },
+    { name: "Nhật Ký Kho", href: "/inventory-logs", icon: Clock },
     { name: "Khách Hàng", href: "/customers", icon: Users },
     { name: "Khuyến Mãi", href: "/vouchers", icon: Tag },
   ];
@@ -181,7 +181,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   PULSETECH <span className="font-normal text-horizon-gray dark:text-horizon-dark-gray">ADMIN</span>
                 </div>
                 <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-horizon-dark dark:text-white">
-                  {mobileMenuOpen ? <X /> : <Menu />}
+                  {mobileMenuOpen ? <X /> : <List />}
                 </button>
               </div>
 
