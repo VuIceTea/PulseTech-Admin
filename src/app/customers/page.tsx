@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Ban, Eye, Lock, MoreHorizontal, Unlock, X } from "lucide-react";
 import { toast } from "sonner";
 import AdminPageSkeleton from "../AdminPageSkeleton";
+import { adminFetch, readApiError } from "../../lib/adminAuth";
 
 interface User {
   id: string;
@@ -34,7 +35,7 @@ export default function CustomersPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/backend-api/auth/users").then(res => res.ok ? res.json() : []),
+      adminFetch("/backend-api/auth/admin/users").then(res => res.ok ? res.json() : []),
       fetch("/backend-api/orders/all").then(res => res.ok ? res.json() : []),
     ])
       .then(([userData, orderData]) => {
@@ -72,10 +73,31 @@ export default function CustomersPage() {
     return date.toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit" });
   };
 
-  const handleAccountLockClick = (user: User) => {
-    toast.error(
-      `${user.locked ? "Mở khóa" : "Khóa"} tài khoản cần API admin có phân quyền bảo vệ. Hiện backend chưa có lớp xác thực admin nên mình chưa bật thao tác ghi này để tránh rủi ro.`
-    );
+  const updateUserInState = (updated: User) => {
+    setUsers(current => current.map(user => user.id === updated.id ? updated : user));
+    setSelectedUser(current => current?.id === updated.id ? updated : current);
+  };
+
+  const handleAccountLockClick = async (user: User) => {
+    try {
+      const response = await adminFetch(`/backend-api/auth/admin/users/${encodeURIComponent(user.id)}/locked`, {
+        method: "PATCH", body: JSON.stringify({ locked: !user.locked }),
+      });
+      if (!response.ok) throw new Error(await readApiError(response));
+      updateUserInState(await response.json());
+      toast.success(user.locked ? "Đã mở khóa tài khoản" : "Đã khóa tài khoản");
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Không thể cập nhật tài khoản"); }
+  };
+
+  const handleRoleChange = async (user: User, role: string) => {
+    try {
+      const response = await adminFetch(`/backend-api/auth/admin/users/${encodeURIComponent(user.id)}/roles`, {
+        method: "PATCH", body: JSON.stringify({ roles: [role] }),
+      });
+      if (!response.ok) throw new Error(await readApiError(response));
+      updateUserInState(await response.json());
+      toast.success("Đã cập nhật quyền tài khoản");
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Không thể cập nhật phân quyền"); }
   };
 
   if (loading) return <AdminPageSkeleton variant="table" />;
@@ -170,6 +192,18 @@ export default function CustomersPage() {
               <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-600">
                 {selectedUser.verified ? "Đã xác thực email" : "Chưa xác thực email"}
               </span>
+              <label className="flex items-center gap-2 text-sm font-bold text-horizon-dark dark:text-white">
+                Phân quyền
+                <select
+                  value={selectedUser.roles?.includes("ADMIN") ? "ADMIN" : selectedUser.roles?.includes("STAFF") ? "STAFF" : "USER"}
+                  onChange={(event) => handleRoleChange(selectedUser, event.target.value)}
+                  className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-horizon-brand dark:border-white/10 dark:bg-horizon-dark-card"
+                >
+                  <option value="USER">Khách hàng</option>
+                  <option value="STAFF">Nhân viên</option>
+                  <option value="ADMIN">Quản trị viên</option>
+                </select>
+              </label>
               <button onClick={() => handleAccountLockClick(selectedUser)} className="ml-auto inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-100">
                 <Ban className="h-4 w-4" />
                 {selectedUser.locked ? "Mở khóa tài khoản" : "Khóa tài khoản"}

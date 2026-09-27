@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Geist } from "next/font/google";
 import { ThemeProvider, useTheme } from "next-themes";
 import {
@@ -20,10 +21,15 @@ import {
   Settings,
   Mail,
   LogOut,
-  Tag
+  Tag,
+  ShieldCheck,
+  RefreshCw,
+  Zap,
+  History
 } from "lucide-react";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { clearAdminSession, getAdminSession } from "../lib/adminAuth";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -35,6 +41,7 @@ function Header() {
   const { theme, setTheme } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
@@ -45,7 +52,12 @@ function Header() {
       case "/": return "Tổng Quan";
       case "/products": return "Sản Phẩm";
       case "/orders": return "Đơn Hàng";
+      case "/warranties": return "Bảo Hành";
+      case "/returns": return "Đổi Trả / Hoàn Tiền";
+      case "/flash-sales": return "Flash Sale";
+      case "/inventory-logs": return "Nhật Ký Tồn Kho";
       case "/customers": return "Khách Hàng";
+      case "/vouchers": return "Khuyến Mãi";
       default: return "Bảng Điều Khiển";
     }
   };
@@ -107,10 +119,10 @@ function Header() {
                   <Mail className="h-4 w-4 text-horizon-gray" />
                   Cài đặt thông báo
                 </Link>
-                <Link href="/login" className="flex items-center gap-2 px-2 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors mt-2">
+                <button onClick={() => { clearAdminSession(); router.replace("/login"); }} className="w-full flex items-center gap-2 px-2 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors mt-2">
                   <LogOut className="h-4 w-4" />
                   Đăng xuất
-                </Link>
+                </button>
               </nav>
             </div>
           )}
@@ -122,7 +134,15 @@ function Header() {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authReady, setAuthReady] = useState(pathname === "/login");
+
+  useEffect(() => {
+    if (pathname === "/login") { setAuthReady(true); return; }
+    if (!getAdminSession()) { setAuthReady(false); router.replace("/login"); return; }
+    setAuthReady(true);
+  }, [pathname, router]);
 
   // If login page, don't render sidebar
   if (pathname === '/login') {
@@ -143,10 +163,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     );
   }
 
+  if (!authReady) {
+    return (
+      <html lang="vi" suppressHydrationWarning className={`${geist.variable} h-full w-full`}>
+        <body className="min-h-screen bg-horizon-bg flex items-center justify-center font-sans">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-horizon-brand/20 border-t-horizon-brand" />
+        </body>
+      </html>
+    );
+  }
+
   const navigationItems = [
     { name: "Tổng Quan", href: "/", icon: Home },
     { name: "Sản Phẩm", href: "/products", icon: Package },
     { name: "Đơn Hàng", href: "/orders", icon: ShoppingCart },
+    { name: "Bảo Hành", href: "/warranties", icon: ShieldCheck },
+    { name: "Đổi Trả", href: "/returns", icon: RefreshCw },
+    { name: "Flash Sale", href: "/flash-sales", icon: Zap },
+    { name: "Nhật Ký Kho", href: "/inventory-logs", icon: History },
     { name: "Khách Hàng", href: "/customers", icon: Users },
     { name: "Khuyến Mãi", href: "/vouchers", icon: Tag },
   ];
