@@ -4,17 +4,15 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import AdminPageSkeleton from "./AdminPageSkeleton";
 import { 
-  BarChart3,
+  ChartBar,
   FileText,
-  Home,
-  CheckSquare,
-  BarChart,
-  Calendar,
-  TrendingUp,
-  DollarSign,
+  CheckSquareOffset,
+  CalendarBlank,
+  TrendUp,
+  CurrencyCircleDollar,
   ShieldCheck,
-  RefreshCw
-} from "lucide-react";
+  ArrowsCounterClockwise
+} from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { adminFetch } from "../lib/adminAuth";
 
@@ -95,60 +93,47 @@ export default function AdminDashboardPage() {
   const totalProducts = products.length;
   const totalOrders = orders.length;
   const totalUsers = users.length;
-  const pendingOrders = orders.filter(o => o.status === 1).length;
-  const totalCategories = new Set(products.map(product => product.category).filter(Boolean)).size;
+  const pendingOrders = orders.filter(o => o.status === 0 || o.status === 1).length;
 
   if (loading) return <AdminPageSkeleton variant="dashboard" />;
 
   return (
     <div className="space-y-6 max-w-full">
-      {/* Profit & Financial Summary Card */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 text-white p-6 rounded-[24px] shadow-xl">
+      {/* Financial & Profit Summary Banner */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 bg-gradient-to-r from-[#1B254B] via-[#111C44] to-[#0B1437] text-white p-6 rounded-[24px] shadow-xl border border-white/10">
         <div>
           <div className="text-xs uppercase font-bold text-indigo-300 mb-1 flex items-center gap-1.5">
-            <DollarSign className="w-4 h-4 text-green-400" /> Tổng Doanh Thu Hoàn Tất
+            <CurrencyCircleDollar className="w-5 h-5 text-emerald-400" /> Doanh Thu Đơn Hoàn Tất
           </div>
           <div className="text-3xl font-extrabold tracking-tight text-white">
             {totalRevenue.toLocaleString("vi-VN")} đ
           </div>
-          <p className="text-xs text-indigo-200 mt-1">Từ các đơn hàng thành công</p>
+          <p className="text-xs text-indigo-200 mt-1">Tổng tiền thu được từ đơn giao thành công</p>
         </div>
 
         <div>
           <div className="text-xs uppercase font-bold text-indigo-300 mb-1 flex items-center gap-1.5">
-            <BarChart className="w-4 h-4 text-amber-400" /> Tổng Giá Vốn Sản Phẩm
+            <ChartBar className="w-5 h-5 text-amber-400" /> Tổng Giá Vốn Hàng Bán
           </div>
           <div className="text-3xl font-extrabold tracking-tight text-amber-300">
             {estimatedCost.toLocaleString("vi-VN")} đ
           </div>
-          <p className="text-xs text-indigo-200 mt-1">Ước tính giá nhập kho hàng</p>
+          <p className="text-xs text-indigo-200 mt-1">Tổng chi phí nhập kho của sản phẩm đã bán</p>
         </div>
 
         <div>
           <div className="text-xs uppercase font-bold text-indigo-300 mb-1 flex items-center gap-1.5">
-            <TrendingUp className="w-4 h-4 text-green-400" /> Lợi Nhuận Ròng (Net Profit)
+            <TrendUp className="w-5 h-5 text-emerald-400" /> Lợi Nhuận Ròng (Net Profit)
           </div>
-          <div className="text-3xl font-extrabold tracking-tight text-green-400">
+          <div className="text-3xl font-extrabold tracking-tight text-emerald-400">
             {netProfit.toLocaleString("vi-VN")} đ
           </div>
-          <p className="text-xs text-green-300 mt-1">Tỷ suất lợi nhuận ~30%</p>
+          <p className="text-xs text-emerald-300 mt-1">Lợi Nhuận Ròng = Doanh Thu - Giá Vốn</p>
         </div>
       </div>
 
-      {/* 6 Stat Cards Grid */}
+      {/* 5 Distinct Stat Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        <Link href="/orders" className="group bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-sm hover:-translate-y-1 transition-all cursor-pointer">
-          <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
-            <BarChart3 className="h-7 w-7" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Tổng Doanh Thu</p>
-            <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {`${totalRevenue.toLocaleString('vi-VN')}đ`}
-            </p>
-          </div>
-        </Link>
-
         <Link href="/orders" className="group bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-sm hover:-translate-y-1 transition-all cursor-pointer">
           <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
             <FileText className="h-7 w-7" />
@@ -163,18 +148,30 @@ export default function AdminDashboardPage() {
 
         <Link href="/products" className="group bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-sm hover:-translate-y-1 transition-all cursor-pointer">
           <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
-            <BarChart className="h-7 w-7" />
+            <ChartBar className="h-7 w-7" />
           </div>
           <div>
-            <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Sản Phẩm Active</p>
+            <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Sản Phẩm Đang Bán</p>
             <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
               {totalProducts.toLocaleString('vi-VN')}
             </p>
           </div>
         </Link>
 
+        <Link href="/orders" className="group bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-sm hover:-translate-y-1 transition-all cursor-pointer">
+          <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
+            <CheckSquareOffset className="h-7 w-7" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Đơn Chờ Xử Lý</p>
+            <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
+              {pendingOrders.toLocaleString('vi-VN')}
+            </p>
+          </div>
+        </Link>
+
         <Link href="/warranties" className="group bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-sm hover:-translate-y-1 transition-all cursor-pointer">
-          <div className="h-14 w-14 rounded-full bg-green-50 dark:bg-green-500/10 flex items-center justify-center text-green-600">
+          <div className="h-14 w-14 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600">
             <ShieldCheck className="h-7 w-7" />
           </div>
           <div>
@@ -187,24 +184,12 @@ export default function AdminDashboardPage() {
 
         <Link href="/returns" className="group bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-sm hover:-translate-y-1 transition-all cursor-pointer">
           <div className="h-14 w-14 rounded-full bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600">
-            <RefreshCw className="h-7 w-7" />
+            <ArrowsCounterClockwise className="h-7 w-7" />
           </div>
           <div>
             <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Đổi Trả & Hoàn Tiền</p>
             <p className="text-lg font-bold text-horizon-dark dark:text-white tracking-tight">
               Tự động hoàn kho
-            </p>
-          </div>
-        </Link>
-
-        <Link href="/orders" className="group bg-white dark:bg-horizon-dark-card rounded-[20px] p-[18px] flex items-center gap-4 shadow-sm hover:-translate-y-1 transition-all cursor-pointer">
-          <div className="h-14 w-14 rounded-full bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
-            <CheckSquare className="h-7 w-7" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-horizon-gray dark:text-horizon-dark-gray">Đơn Chờ Xử Lý</p>
-            <p className="text-2xl font-bold text-horizon-dark dark:text-white tracking-tight">
-              {pendingOrders.toLocaleString('vi-VN')}
             </p>
           </div>
         </Link>
@@ -215,11 +200,11 @@ export default function AdminDashboardPage() {
         <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-6 shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-8">
             <button className="flex items-center gap-2 bg-[#F4F7FE] dark:bg-horizon-dark-bg text-horizon-gray dark:text-horizon-dark-gray px-3 py-1.5 rounded-lg text-sm font-medium">
-              <Calendar className="h-4 w-4" />
+              <CalendarBlank className="h-4 w-4" />
               <span>Tháng này</span>
             </button>
             <div className="h-8 w-8 rounded-lg bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
-              <BarChart3 className="h-4 w-4" />
+              <ChartBar className="h-4 w-4" />
             </div>
           </div>
 
@@ -261,7 +246,7 @@ export default function AdminDashboardPage() {
           <div className="flex items-center justify-between mb-10">
             <h2 className="text-xl font-bold text-horizon-dark dark:text-white">Thống kê doanh số theo tuần</h2>
             <div className="h-8 w-8 rounded-lg bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
-              <BarChart3 className="h-4 w-4" />
+              <ChartBar className="h-4 w-4" />
             </div>
           </div>
 
