@@ -39,11 +39,11 @@ export default function LoginPage() {
         <Link href="/" className="absolute top-8 left-8 md:left-12 flex items-center gap-2 text-sm font-medium text-horizon-gray hover:text-horizon-dark dark:hover:text-white transition-colors">
           <ChevronLeft className="h-4 w-4" /> Quay lại Dashboard
         </Link>
-        
+
         <div className="flex-1 flex flex-col justify-center max-w-[420px] w-full mx-auto">
           <h1 className="text-4xl font-bold text-horizon-dark dark:text-white mb-2">Đăng nhập</h1>
           <p className="text-horizon-gray dark:text-horizon-dark-gray text-sm mb-8">Nhập email và mật khẩu của bạn để đăng nhập!</p>
-          
+
           <button className="flex items-center justify-center gap-3 w-full bg-[#F4F7FE] dark:bg-horizon-dark-card hover:bg-gray-100 dark:hover:bg-white/5 transition-colors py-3.5 rounded-2xl mb-6">
             <svg viewBox="0 0 24 24" className="w-5 h-5">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -63,28 +63,28 @@ export default function LoginPage() {
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
               <label className="block text-sm font-medium text-horizon-dark dark:text-white mb-2">Email*</label>
-              <input 
-                type="email" 
+              <input
+                type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 required
-                placeholder="mail@pulsetech.com" 
+                placeholder="mail@pulsetech.com"
                 className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3.5 text-sm text-horizon-dark dark:text-white placeholder:text-horizon-gray outline-none focus:border-horizon-brand transition-colors"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-horizon-dark dark:text-white mb-2">Mật khẩu*</label>
               <div className="relative">
-                <input 
-                  type={showPassword ? "text" : "password"} 
+                <input
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   required
-                  placeholder="Tối thiểu 8 ký tự" 
+                  placeholder="Tối thiểu 8 ký tự"
                   className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-2xl pl-4 pr-12 py-3.5 text-sm text-horizon-dark dark:text-white placeholder:text-horizon-gray outline-none focus:border-horizon-brand transition-colors"
                 />
-                <button 
+                <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-horizon-gray hover:text-horizon-dark dark:hover:text-white"
@@ -121,15 +121,10 @@ export default function LoginPage() {
             <div className="w-32 h-32 bg-gradient-to-br from-[#868CFF] to-[#4318FF] rounded-full" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 50%, 0 50%)' }} />
             <div className="w-32 h-32 bg-white rounded-full absolute bottom-4" />
           </div>
-          
+
           <h2 className="text-white text-5xl font-bold tracking-tight mb-12 flex items-center gap-2">
-            PulseTech <span className="text-xl px-2 py-1 border-2 border-white rounded-xl">UI</span>
+            PulseTech
           </h2>
-          
-          <div className="absolute bottom-16 border border-white/20 bg-white/10 backdrop-blur-md rounded-2xl px-12 py-6 text-center">
-            <p className="text-white/80 text-sm font-medium mb-1">Tìm hiểu thêm về PulseTech UI tại</p>
-            <p className="text-white font-bold text-lg">pulsetech.com</p>
-          </div>
         </div>
       </div>
     </div>
