@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Geist } from "next/font/google";
 import { ThemeProvider, useTheme } from "next-themes";
 import {
@@ -103,7 +102,6 @@ function Header() {
             <img src="https://i.pravatar.cc/150?img=68" alt="User" className="w-full h-full object-cover" />
           </div>
 
-          {/* Profile Dropdown */}
           {dropdownOpen && (
             <div className="absolute right-0 top-12 mt-2 w-56 bg-white dark:bg-horizon-dark-card rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-none dark:border dark:border-white/10 p-4 z-50">
               <div className="flex items-center gap-2 mb-4 border-b border-gray-100 dark:border-white/10 pb-4">
@@ -144,35 +142,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     setAuthReady(true);
   }, [pathname, router]);
 
-  // If login page, don't render sidebar
-  if (pathname === '/login') {
-    return (
-      <html lang="vi" suppressHydrationWarning className={`${geist.variable} h-full w-full scroll-smooth`}>
-        <head>
-          <title>PulseTech Admin</title>
-          <meta name="description" content="Horizon UI Admin Dashboard for PulseTech." />
-          <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
-        </head>
-        <body className="min-h-screen bg-horizon-bg dark:bg-[#0B1437] text-horizon-dark dark:text-white font-sans antialiased">
-          <ThemeProvider attribute="class" defaultTheme="light">
-            <Toaster position="top-right" richColors />
-            {children}
-          </ThemeProvider>
-        </body>
-      </html>
-    );
-  }
-
-  if (!authReady) {
-    return (
-      <html lang="vi" suppressHydrationWarning className={`${geist.variable} h-full w-full`}>
-        <body className="min-h-screen bg-horizon-bg flex items-center justify-center font-sans">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-horizon-brand/20 border-t-horizon-brand" />
-        </body>
-      </html>
-    );
-  }
-
   const navigationItems = [
     { name: "Tổng Quan", href: "/", icon: Home },
     { name: "Sản Phẩm", href: "/products", icon: Package },
@@ -185,6 +154,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     { name: "Khuyến Mãi", href: "/vouchers", icon: Tag },
   ];
 
+  const isLoginPage = pathname === "/login";
+
   return (
     <html lang="vi" suppressHydrationWarning className={`${geist.variable} h-full w-full scroll-smooth`}>
       <head>
@@ -192,85 +163,90 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="description" content="Horizon UI Admin Dashboard for PulseTech." />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="min-h-screen bg-horizon-bg dark:bg-horizon-dark-bg text-horizon-dark dark:text-white flex font-sans antialiased">
-        <ThemeProvider attribute="class" defaultTheme="light">
+      <body suppressHydrationWarning className="min-h-screen bg-horizon-bg dark:bg-horizon-dark-bg text-horizon-dark dark:text-white flex font-sans antialiased">
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <Toaster position="top-right" richColors />
 
-          {/* Mobile Header */}
-          <div className="md:hidden fixed top-0 w-full flex items-center justify-between px-4 py-4 bg-white dark:bg-[#0B1437] z-40">
-            <div className="font-bold text-horizon-dark dark:text-white tracking-tight uppercase">
-              PULSETECH <span className="font-normal text-horizon-gray dark:text-horizon-dark-gray">ADMIN</span>
+          {isLoginPage ? (
+            <div className="w-full min-h-screen">{children}</div>
+          ) : !authReady ? (
+            <div className="min-h-screen w-full bg-horizon-bg flex items-center justify-center font-sans">
+              <div className="h-12 w-12 animate-spin rounded-full border-4 border-horizon-brand/20 border-t-horizon-brand" />
             </div>
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-horizon-dark dark:text-white">
-              {mobileMenuOpen ? <X /> : <Menu />}
-            </button>
-          </div>
-
-          {/* Sidebar */}
-          <aside className={`fixed inset-y-0 left-0 z-50 w-72 flex flex-col bg-white dark:bg-[#0B1437] transform transition-transform duration-300 md:relative md:translate-x-0 ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
-            {/* Logo */}
-            <div className="flex items-center justify-center h-24 border-b border-gray-100/50 dark:border-white/5">
-              <h1 className="text-[26px] font-bold text-horizon-dark dark:text-white tracking-tighter uppercase">
-                PulseTech <span className="font-normal text-horizon-gray dark:text-horizon-dark-gray">ADMIN</span>
-              </h1>
-            </div>
-
-            {/* Links */}
-            <nav className="flex-1 px-6 py-8 space-y-2">
-              {navigationItems.map((item) => {
-                const active = pathname === item.href;
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${active ? "bg-horizon-brand/5 dark:bg-horizon-brand/20 text-horizon-brand dark:text-white font-bold shadow-sm" : "text-horizon-gray dark:text-horizon-dark-gray font-medium hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5"
-                      }`}
-                  >
-                    <Icon className={`h-5 w-5 ${active ? "text-horizon-brand dark:text-white" : "text-horizon-gray dark:text-horizon-dark-gray"}`} />
-                    <span className="text-[15px]">{item.name}</span>
-                    {active && (
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-horizon-brand rounded-l-full" />
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            {/* Upgrade Card */}
-            <div className="mt-auto px-6 mb-8 hidden md:block shrink-0">
-              <div className="relative rounded-3xl bg-gradient-to-br from-[#868CFF] to-[#4318FF] p-6 text-center shadow-lg shadow-horizon-brand/30 overflow-hidden">
-                <div className="absolute -top-6 -left-6 w-16 h-16 bg-white/10 rounded-full blur-xl" />
-                <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-xl" />
-
-                <div className="mx-auto w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-4 ring-4 ring-white/10 backdrop-blur-sm">
-                  <span className="text-white font-bold text-xl">P</span>
+          ) : (
+            <div className="flex w-full min-h-screen">
+              {/* Mobile Header */}
+              <div className="md:hidden fixed top-0 w-full flex items-center justify-between px-4 py-4 bg-white dark:bg-[#0B1437] z-40">
+                <div className="font-bold text-horizon-dark dark:text-white tracking-tight uppercase">
+                  PULSETECH <span className="font-normal text-horizon-gray dark:text-horizon-dark-gray">ADMIN</span>
                 </div>
-                <h3 className="text-white font-bold text-lg mb-1">Cần hỗ trợ?</h3>
-                <p className="text-white/80 text-xs mb-4">
-                  Tham khảo tài liệu hoặc liên hệ hỗ trợ PulseTech
-                </p>
-                <button className="w-full bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-bold py-2.5 rounded-xl backdrop-blur-sm cursor-pointer">
-                  TÀI LIỆU
+                <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-horizon-dark dark:text-white">
+                  {mobileMenuOpen ? <X /> : <Menu />}
                 </button>
               </div>
-            </div>
-          </aside>
 
-          {mobileMenuOpen && (
-            <div className="fixed inset-0 bg-horizon-dark/20 dark:bg-black/40 backdrop-blur-sm z-40 md:hidden" onClick={() => setMobileMenuOpen(false)} />
+              {/* Sidebar */}
+              <aside className={`fixed inset-y-0 left-0 z-50 w-72 flex flex-col bg-white dark:bg-[#0B1437] transform transition-transform duration-300 md:relative md:translate-x-0 ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
+                <div className="flex items-center justify-center h-24 border-b border-gray-100/50 dark:border-white/5">
+                  <h1 className="text-[26px] font-bold text-horizon-dark dark:text-white tracking-tighter uppercase">
+                    PulseTech <span className="font-normal text-horizon-gray dark:text-horizon-dark-gray">ADMIN</span>
+                  </h1>
+                </div>
+
+                <nav className="flex-1 px-6 py-8 space-y-2">
+                  {navigationItems.map((item) => {
+                    const active = pathname === item.href;
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${active ? "bg-horizon-brand/5 dark:bg-horizon-brand/20 text-horizon-brand dark:text-white font-bold shadow-sm" : "text-horizon-gray dark:text-horizon-dark-gray font-medium hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5"
+                          }`}
+                      >
+                        <Icon className={`h-5 w-5 ${active ? "text-horizon-brand dark:text-white" : "text-horizon-gray dark:text-horizon-dark-gray"}`} />
+                        <span className="text-[15px]">{item.name}</span>
+                        {active && (
+                          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-horizon-brand rounded-l-full" />
+                        )}
+                      </Link>
+                    );
+                  })}
+                </nav>
+
+                <div className="mt-auto px-6 mb-8 hidden md:block shrink-0">
+                  <div className="relative rounded-3xl bg-gradient-to-br from-[#868CFF] to-[#4318FF] p-6 text-center shadow-lg shadow-horizon-brand/30 overflow-hidden">
+                    <div className="absolute -top-6 -left-6 w-16 h-16 bg-white/10 rounded-full blur-xl" />
+                    <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-xl" />
+
+                    <div className="mx-auto w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-4 ring-4 ring-white/10 backdrop-blur-sm">
+                      <span className="text-white font-bold text-xl">P</span>
+                    </div>
+                    <h3 className="text-white font-bold text-lg mb-1">Cần hỗ trợ?</h3>
+                    <p className="text-white/80 text-xs mb-4">
+                      Tham khảo tài liệu hoặc liên hệ hỗ trợ PulseTech
+                    </p>
+                    <button className="w-full bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-bold py-2.5 rounded-xl backdrop-blur-sm cursor-pointer">
+                      TÀI LIỆU
+                    </button>
+                  </div>
+                </div>
+              </aside>
+
+              {mobileMenuOpen && (
+                <div className="fixed inset-0 bg-horizon-dark/20 dark:bg-black/40 backdrop-blur-sm z-40 md:hidden" onClick={() => setMobileMenuOpen(false)} />
+              )}
+
+              {/* Main Content */}
+              <main className="flex-1 flex flex-col min-w-0 md:h-screen md:overflow-y-auto">
+                <Header />
+                <div className="px-4 md:px-8 pb-8 flex-1 mt-4 md:mt-0">
+                  {children}
+                </div>
+              </main>
+            </div>
           )}
-
-          {/* Main Content */}
-          <main className="flex-1 flex flex-col min-w-0 md:h-screen md:overflow-y-auto">
-            <Header />
-
-            {/* Page Content */}
-            <div className="px-4 md:px-8 pb-8 flex-1 mt-4 md:mt-0">
-              {children}
-            </div>
-          </main>
         </ThemeProvider>
       </body>
     </html>
