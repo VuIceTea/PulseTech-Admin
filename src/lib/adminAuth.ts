@@ -47,6 +47,8 @@ export async function readApiError(response: Response) {
   const text = await response.text().catch(() => "");
   try {
     const body = text ? JSON.parse(text) : null;
-    return body?.detail || body?.message || `API trả về lỗi ${response.status}`;
-  } catch { return text || `API trả về lỗi ${response.status}`; }
+    return body?.detail || body?.message || body?.reason || body?.error || (response.status === 401 ? "Email hoặc mật khẩu không đúng" : `API trả về lỗi ${response.status}`);
+  } catch {
+    return text || (response.status === 401 ? "Email hoặc mật khẩu không đúng" : `API trả về lỗi ${response.status}`);
+  }
 }
