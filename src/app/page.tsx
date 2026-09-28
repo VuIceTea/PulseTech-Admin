@@ -102,27 +102,27 @@ export default function AdminDashboardPage() {
       {/* Financial & Profit Summary Banner */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 bg-gradient-to-r from-[#1B254B] via-[#111C44] to-[#0B1437] text-white p-6 rounded-[24px] shadow-xl border border-white/10">
         <div>
-          <div className="text-xs uppercase font-bold text-indigo-300 mb-1 flex items-center gap-1.5">
+          <div className="text-xs uppercase font-bold text-white mb-1 flex items-center gap-1.5">
             <CurrencyCircleDollar className="w-5 h-5 text-emerald-400" /> Doanh Thu Đơn Hoàn Tất
           </div>
           <div className="text-3xl font-extrabold tracking-tight text-red-500">
             {totalRevenue.toLocaleString("vi-VN")} đ
           </div>
-          <p className="text-xs text-indigo-200 mt-1">Tổng tiền thu được từ đơn giao thành công</p>
+          <p className="text-xs text-white mt-1">Tổng tiền thu được từ đơn giao thành công</p>
         </div>
 
         <div>
-          <div className="text-xs uppercase font-bold text-indigo-300 mb-1 flex items-center gap-1.5">
+          <div className="text-xs uppercase font-bold text-white mb-1 flex items-center gap-1.5">
             <ChartBar className="w-5 h-5 text-amber-400" /> Tổng Giá Vốn Hàng Bán
           </div>
           <div className="text-3xl font-extrabold tracking-tight text-red-500">
             {estimatedCost.toLocaleString("vi-VN")} đ
           </div>
-          <p className="text-xs text-indigo-200 mt-1">Tổng chi phí nhập kho của sản phẩm đã bán</p>
+          <p className="text-xs text-white mt-1">Tổng chi phí nhập kho của sản phẩm đã bán</p>
         </div>
 
         <div>
-          <div className="text-xs uppercase font-bold text-indigo-300 mb-1 flex items-center gap-1.5">
+          <div className="text-xs uppercase font-bold text-white mb-1 flex items-center gap-1.5">
             <TrendUp className="w-5 h-5 text-emerald-400" /> Lợi Nhuận Ròng (Net Profit)
           </div>
           <div className="text-3xl font-extrabold tracking-tight text-red-500">
