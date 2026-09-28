@@ -6,26 +6,26 @@ import { usePathname, useRouter } from "next/navigation";
 import { Geist } from "next/font/google";
 import { ThemeProvider, useTheme } from "next-themes";
 import {
-  Home,
+  House,
   Package,
   ShoppingCart,
   Users,
-  Search,
+  MagnifyingGlass,
   Bell,
   Info,
   Moon,
   Sun,
-  Menu,
+  List,
   X,
-  Settings,
-  Mail,
-  LogOut,
+  Gear,
+  EnvelopeSimple,
+  SignOut,
   Tag,
   ShieldCheck,
-  RefreshCw,
-  Zap,
-  History
-} from "lucide-react";
+  ArrowsCounterClockwise,
+  Lightning,
+  Clock
+} from "@phosphor-icons/react";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { clearAdminSession, getAdminSession } from "../lib/adminAuth";
@@ -74,7 +74,7 @@ function Header() {
 
       <div className="flex items-center gap-4 bg-white dark:bg-horizon-dark-card rounded-full p-2.5 shadow-sm">
         <div className="relative bg-[#F4F7FE] dark:bg-[#0B1437] rounded-full px-4 py-2.5 flex items-center gap-2 w-full md:w-64">
-          <Search className="h-4 w-4 text-horizon-dark dark:text-white" />
+          <MagnifyingGlass className="h-4 w-4 text-horizon-dark dark:text-white" />
           <input
             type="text"
             placeholder="Tìm kiếm..."
@@ -110,15 +110,15 @@ function Header() {
               </div>
               <nav className="flex flex-col gap-1 text-sm font-medium text-horizon-dark dark:text-white">
                 <Link href="#" className="flex items-center gap-2 px-2 py-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors">
-                  <Settings className="h-4 w-4 text-horizon-gray" />
+                  <Gear className="h-4 w-4 text-horizon-gray" />
                   Cài đặt tài khoản
                 </Link>
                 <Link href="#" className="flex items-center gap-2 px-2 py-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors">
-                  <Mail className="h-4 w-4 text-horizon-gray" />
+                  <EnvelopeSimple className="h-4 w-4 text-horizon-gray" />
                   Cài đặt thông báo
                 </Link>
                 <button onClick={() => { clearAdminSession(); router.replace("/login"); }} className="w-full flex items-center gap-2 px-2 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors mt-2">
-                  <LogOut className="h-4 w-4" />
+                  <SignOut className="h-4 w-4" />
                   Đăng xuất
                 </button>
               </nav>
@@ -143,13 +143,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   }, [pathname, router]);
 
   const navigationItems = [
-    { name: "Tổng Quan", href: "/", icon: Home },
+    { name: "Tổng Quan", href: "/", icon: House },
     { name: "Sản Phẩm", href: "/products", icon: Package },
     { name: "Đơn Hàng", href: "/orders", icon: ShoppingCart },
     { name: "Bảo Hành", href: "/warranties", icon: ShieldCheck },
-    { name: "Đổi Trả", href: "/returns", icon: RefreshCw },
-    { name: "Flash Sale", href: "/flash-sales", icon: Zap },
-    { name: "Nhật Ký Kho", href: "/inventory-logs", icon: History },
+    { name: "Đổi Trả", href: "/returns", icon: ArrowsCounterClockwise },
+    { name: "Flash Sale", href: "/flash-sales", icon: Lightning },
+    { name: "Nhật Ký Kho", href: "/inventory-logs", icon: Clock },
     { name: "Khách Hàng", href: "/customers", icon: Users },
     { name: "Khuyến Mãi", href: "/vouchers", icon: Tag },
   ];
@@ -181,7 +181,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   PULSETECH <span className="font-normal text-horizon-gray dark:text-horizon-dark-gray">ADMIN</span>
                 </div>
                 <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-horizon-dark dark:text-white">
-                  {mobileMenuOpen ? <X /> : <Menu />}
+                  {mobileMenuOpen ? <X /> : <List />}
                 </button>
               </div>
 

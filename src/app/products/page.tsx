@@ -453,8 +453,12 @@ export default function ProductsPage() {
       if (!Number.isFinite(Number(storage.priceOffset)) || Number(storage.priceOffset) < 0) {
         return `Giá cộng thêm của biến thể thứ ${index + 1} phải từ 0 trở lên`;
       }
-      if (!Number.isInteger(Number(storage.stock)) || (storage.stock ?? -1) < 0) {
-        return `Tồn kho của biến thể thứ ${index + 1} phải là số nguyên từ 0 trở lên`;
+      const rawStock = storage.stock;
+      if (rawStock !== undefined && rawStock !== null && rawStock !== ("" as any)) {
+        const parsedStock = Number(rawStock);
+        if (!Number.isInteger(parsedStock) || parsedStock < 0) {
+          return `Tồn kho của biến thể thứ ${index + 1} phải là số nguyên từ 0 trở lên`;
+        }
       }
     }
 
