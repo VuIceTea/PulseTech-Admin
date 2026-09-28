@@ -38,9 +38,8 @@ export default function CustomersPage() {
     Promise.all([
       adminFetch("/backend-api/auth/admin/users").then(res => res.ok ? res.json() : []),
       fetch("/backend-api/orders/all").then(res => res.ok ? res.json() : []),
-    ])
       .then(([userData, orderData]) => {
-        setUsers(Array.isArray(userData) ? userData : []);
+        setUsers(Array.isArray(userData) ? userData.filter((u: User) => !u.roles?.includes("ADMIN")) : []);
         setOrders(Array.isArray(orderData) ? orderData : []);
       })
       .catch(err => {
@@ -133,7 +132,9 @@ export default function CustomersPage() {
                   </td>
                   <td className="py-4 px-2 text-sm font-bold text-horizon-dark dark:text-white">{user.email}</td>
                   <td className="py-4 px-2">
-                    <span className="text-sm font-bold text-horizon-dark dark:text-white">{user.roles?.join(", ") || "USER"}</span>
+                    <span className="text-sm font-bold text-horizon-dark dark:text-white">
+                      {user.roles?.includes("STAFF") ? "Nhân viên" : "Khách hàng"}
+                    </span>
                   </td>
                   <td className="py-4 px-2 text-sm font-bold text-horizon-dark dark:text-white">{formatDate(user.createdAt)}</td>
                   <td className="py-4 px-2">
@@ -172,85 +173,41 @@ export default function CustomersPage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
-              <div className="rounded-2xl bg-[#F8FAFF] p-4 dark:bg-horizon-dark-bg">
+              <div className="rounded-2xl bg-gray-50 border border-gray-200 shadow-sm p-4 dark:bg-horizon-dark-bg dark:border-white/10">
                 <p className="text-xs font-bold uppercase text-horizon-gray">Họ tên</p>
                 <p className="mt-2 font-bold text-horizon-dark dark:text-white">{selectedUser.name || "Chưa cập nhật"}</p>
               </div>
-              <div className="rounded-2xl bg-[#F8FAFF] p-4 dark:bg-horizon-dark-bg">
+              <div className="rounded-2xl bg-gray-50 border border-gray-200 shadow-sm p-4 dark:bg-horizon-dark-bg dark:border-white/10">
                 <p className="text-xs font-bold uppercase text-horizon-gray">Ngày tham gia</p>
                 <p className="mt-2 font-bold text-horizon-dark dark:text-white">{formatDate(selectedUser.createdAt)}</p>
               </div>
-              <div className="rounded-2xl bg-[#F8FAFF] p-4 dark:bg-horizon-dark-bg">
+              <div className="rounded-2xl bg-gray-50 border border-gray-200 shadow-sm p-4 dark:bg-horizon-dark-bg dark:border-white/10">
                 <p className="text-xs font-bold uppercase text-horizon-gray">Điểm thưởng</p>
                 <p className="mt-2 font-bold text-red-500 font-bold">{(selectedUser.rewardPoints ?? 0).toLocaleString("vi-VN")}</p>
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl bg-[#F8FAFF] p-4 dark:bg-horizon-dark-bg">
-              <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${selectedUser.locked ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"}`}>
-                {selectedUser.locked ? "Đã khóa" : "Đang hoạt động"}
-              </span>
-              <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-600">
-                {selectedUser.verified ? "Đã xác thực email" : "Chưa xác thực email"}
-              </span>
-              <label className="flex items-center gap-2 text-sm font-bold text-horizon-dark dark:text-white">
-                Phân quyền
-                <div className="w-[180px]">
-                  <Select
-                    options={[
-                      { value: "USER", label: "Khách hàng" },
-                      { value: "STAFF", label: "Nhân viên" },
-                      { value: "ADMIN", label: "Quản trị viên" }
-                    ]}
-                    value={
-                      selectedUser.roles?.includes("ADMIN") ? { value: "ADMIN", label: "Quản trị viên" } :
-                      selectedUser.roles?.includes("STAFF") ? { value: "STAFF", label: "Nhân viên" } :
-                      { value: "USER", label: "Khách hàng" }
-                    }
-                    onChange={(option: any) => handleRoleChange(selectedUser, option ? option.value : "USER")}
-                    placeholder="Chọn quyền"
-                    isSearchable={false}
-                    styles={{
-                      control: (base: any, state: any) => ({
-                        ...base,
-                        border: state.isFocused ? '1px solid rgba(67, 24, 255, 0.5)' : '1px solid #e5e7eb',
-                        boxShadow: 'none',
-                        borderRadius: '0.75rem',
-                        padding: '0.15rem 0.25rem',
-                        fontSize: '0.875rem',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        backgroundColor: 'white',
-                      }),
-                      option: (base: any, state: any) => ({
-                        ...base,
-                        backgroundColor: state.isSelected ? '#4318FF' : state.isFocused ? '#eef2ff' : 'white',
-                        color: state.isSelected ? 'white' : state.isFocused ? '#4318FF' : '#1f2937',
-                        fontSize: '0.875rem',
-                        cursor: 'pointer',
-                        borderRadius: '0.5rem',
-                        margin: '0.2rem 0.4rem',
-                        width: 'auto',
-                      }),
-                      menu: (base: any) => ({
-                        ...base,
-                        borderRadius: '0.75rem',
-                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                        border: '1px solid #f3f4f6',
-                        zIndex: 50
-                      })
-                    }}
-                  />
-                </div>
-              </label>
-              <button onClick={() => handleAccountLockClick(selectedUser)} className="ml-auto inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-100">
+            <div className="mt-4 flex flex-wrap items-center gap-4 rounded-2xl bg-gray-50 border border-gray-200 shadow-sm p-5 dark:bg-horizon-dark-bg dark:border-white/10">
+              <div className="flex flex-wrap items-center gap-3 mr-auto">
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold shadow-sm border ${selectedUser.locked ? "bg-red-50 text-red-600 border-red-200" : "bg-emerald-50 text-emerald-600 border-emerald-200"}`}>
+                  <span className={`w-2 h-2 rounded-full ${selectedUser.locked ? "bg-red-500" : "bg-emerald-500"}`}></span>
+                  {selectedUser.locked ? "Đã khóa" : "Đang hoạt động"}
+                </span>
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold shadow-sm border ${selectedUser.verified ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-gray-100 text-gray-500 border-gray-200"}`}>
+                  {selectedUser.verified ? "Đã xác thực email" : "Chưa xác thực email"}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-3.5 py-1.5 text-xs font-bold text-purple-600 shadow-sm border border-purple-200">
+                  Phân quyền: {selectedUser.roles?.includes("STAFF") ? "Nhân viên" : "Khách hàng"}
+                </span>
+              </div>
+              <button onClick={() => handleAccountLockClick(selectedUser)} className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-100 transition-colors shadow-sm border border-red-200">
                 <Ban className="h-4 w-4" />
                 {selectedUser.locked ? "Mở khóa tài khoản" : "Khóa tài khoản"}
               </button>
             </div>
 
             <div className="mt-6">
-              <h4 className="mb-3 text-sm font-bold uppercase text-horizon-gray">Đơn hàng của khách</h4>
+              <h4 className="mb-3 text-sm font-bold uppercase text-horizon-gray">Lịch sử mua hàng</h4>
               <div className="space-y-3">
                 {selectedOrders.length > 0 ? selectedOrders.map(order => (
                   <div key={order.id} className="rounded-2xl border border-gray-100 p-4 dark:border-white/10">
