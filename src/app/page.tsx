@@ -105,7 +105,7 @@ export default function AdminDashboardPage() {
           <div className="text-xs uppercase font-bold text-indigo-300 mb-1 flex items-center gap-1.5">
             <CurrencyCircleDollar className="w-5 h-5 text-emerald-400" /> Doanh Thu Đơn Hoàn Tất
           </div>
-          <div className="text-3xl font-extrabold tracking-tight text-white">
+          <div className="text-3xl font-extrabold tracking-tight text-red-500">
             {totalRevenue.toLocaleString("vi-VN")} đ
           </div>
           <p className="text-xs text-indigo-200 mt-1">Tổng tiền thu được từ đơn giao thành công</p>
@@ -115,7 +115,7 @@ export default function AdminDashboardPage() {
           <div className="text-xs uppercase font-bold text-indigo-300 mb-1 flex items-center gap-1.5">
             <ChartBar className="w-5 h-5 text-amber-400" /> Tổng Giá Vốn Hàng Bán
           </div>
-          <div className="text-3xl font-extrabold tracking-tight text-amber-300">
+          <div className="text-3xl font-extrabold tracking-tight text-red-500">
             {estimatedCost.toLocaleString("vi-VN")} đ
           </div>
           <p className="text-xs text-indigo-200 mt-1">Tổng chi phí nhập kho của sản phẩm đã bán</p>
@@ -125,7 +125,7 @@ export default function AdminDashboardPage() {
           <div className="text-xs uppercase font-bold text-indigo-300 mb-1 flex items-center gap-1.5">
             <TrendUp className="w-5 h-5 text-emerald-400" /> Lợi Nhuận Ròng (Net Profit)
           </div>
-          <div className="text-3xl font-extrabold tracking-tight text-emerald-400">
+          <div className="text-3xl font-extrabold tracking-tight text-red-500">
             {netProfit.toLocaleString("vi-VN")} đ
           </div>
           <p className="text-xs text-emerald-300 mt-1">Lợi Nhuận Ròng = Doanh Thu - Giá Vốn</p>
@@ -195,53 +195,7 @@ export default function AdminDashboardPage() {
         </Link>
       </div>
 
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-6 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-8">
-            <button className="flex items-center gap-2 bg-[#F4F7FE] dark:bg-horizon-dark-bg text-horizon-gray dark:text-horizon-dark-gray px-3 py-1.5 rounded-lg text-sm font-medium">
-              <CalendarBlank className="h-4 w-4" />
-              <span>Tháng này</span>
-            </button>
-            <div className="h-8 w-8 rounded-lg bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand dark:text-white">
-              <ChartBar className="h-4 w-4" />
-            </div>
-          </div>
-
-          <div className="flex items-end justify-between mb-6">
-            <div>
-              <h2 className="text-[34px] font-bold text-horizon-dark dark:text-white leading-tight">
-                {`${totalRevenue.toLocaleString('vi-VN')}đ`}
-              </h2>
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <span className="text-horizon-gray dark:text-horizon-dark-gray">Tổng doanh thu thực tế</span>
-                <span className="text-[#05CD99] flex items-center font-bold">
-                  +15.4%
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-auto h-48 w-full relative">
-            <svg viewBox="0 0 400 150" className="w-full h-full" preserveAspectRatio="none">
-              <path 
-                d="M 0 120 C 50 120, 70 80, 100 80 C 130 80, 150 140, 200 140 C 250 140, 260 40, 300 40 C 330 40, 350 100, 400 100" 
-                fill="none" 
-                stroke="#6AD2FF" 
-                strokeWidth="4" 
-                strokeLinecap="round" 
-              />
-              <path 
-                d="M 0 80 C 40 80, 50 30, 100 30 C 150 30, 160 100, 200 100 C 240 100, 260 20, 300 20 C 340 20, 360 80, 400 60" 
-                fill="none" 
-                stroke="#4318FF" 
-                strokeWidth="4" 
-                strokeLinecap="round" 
-              />
-            </svg>
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 gap-5">
         <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-6 shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-10">
             <h2 className="text-xl font-bold text-horizon-dark dark:text-white">Thống kê doanh số theo tuần</h2>

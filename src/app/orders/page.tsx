@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { MoreHorizontal, CheckCircle2, XCircle, Clock, ChevronDown, X } from "lucide-react";
+import { MoreHorizontal, CheckCircle2, XCircle, Clock, ChevronDown, X, Filter } from "lucide-react";
 import { toast } from "sonner";
 import AdminPageSkeleton from "../AdminPageSkeleton";
+import OrderFulfillmentModal from "../../components/OrderFulfillmentModal";
 
 interface Order {
   id: string;
@@ -23,6 +24,7 @@ interface Order {
     image?: string;
     color?: string;
     storage?: string;
+    imeis?: string[];
   }>;
 }
 
@@ -32,6 +34,10 @@ export default function OrdersPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [fulfillingOrder, setFulfillingOrder] = useState<Order | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState<number | null>(null);
+  const [openFilter, setOpenFilter] = useState(false);
 
   const loadOrders = () => {
     setLoading(true);
@@ -57,6 +63,13 @@ export default function OrdersPage() {
       toast.error("Trạng thái này không hợp lệ với tiến trình hiện tại của đơn hàng");
       return;
     }
+
+    if (newStatus === 2 && (order?.items || []).length > 0) {
+      setFulfillingOrder(order);
+      setOpenDropdownId(null);
+      return;
+    }
+
     setUpdatingId(orderId);
     setOpenDropdownId(null);
     try {
@@ -69,7 +82,6 @@ export default function OrdersPage() {
       }
 
       toast.success("Cập nhật trạng thái thành công!");
-      // Update local state without full reload
       setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
     } catch (err) {
       console.error(err);
@@ -115,14 +127,67 @@ export default function OrdersPage() {
 
   if (loading) return <AdminPageSkeleton variant="table" />;
 
+  const filteredOrders = orders.filter(o => 
+    (filterStatus === null || o.status === filterStatus) &&
+    (
+      o.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      (o.customerName || "").toLowerCase().includes(searchTerm.toLowerCase()) || 
+      (o.customerPhone || "").includes(searchTerm)
+    )
+  );
+
   return (
     <div className="w-full">
       <div className="bg-white dark:bg-horizon-dark-card rounded-[20px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] w-full">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-xl font-bold text-horizon-dark dark:text-white">Quản lý Đơn hàng</h2>
-          <button className="h-9 w-9 rounded-xl bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand hover:bg-[#E9EDF7] transition-colors">
-            <MoreHorizontal className="h-5 w-5" />
-          </button>
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <h2 className="text-xl font-bold text-horizon-dark dark:text-white shrink-0">Quản lý Đơn hàng</h2>
+          
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <input 
+              type="text" 
+              placeholder="Tìm mã đơn, tên, SĐT..." 
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="bg-gray-50 dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:border-horizon-brand w-full md:w-64 text-black dark:text-white"
+            />
+            
+            <div className="relative">
+              <button 
+                onClick={() => setOpenFilter(!openFilter)}
+                className={`h-9 px-3 rounded-xl flex items-center justify-center gap-2 transition-colors shrink-0 ${filterStatus !== null ? 'bg-horizon-brand text-white' : 'bg-[#F4F7FE] dark:bg-horizon-dark-bg text-horizon-brand hover:bg-[#E9EDF7]'}`}
+              >
+                <Filter className="h-4 w-4" />
+                <span className="text-sm font-bold hidden sm:inline">Lọc</span>
+              </button>
+              
+              {openFilter && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setOpenFilter(false)} />
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-horizon-dark-card border border-gray-100 dark:border-white/10 rounded-xl shadow-lg z-20 py-2">
+                    <button
+                      onClick={() => { setFilterStatus(null); setOpenFilter(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors ${filterStatus === null ? 'bg-[#F4F7FE] dark:bg-horizon-dark-bg text-horizon-brand' : 'text-horizon-dark dark:text-white hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                    >
+                      Tất cả trạng thái
+                    </button>
+                    {statusMap.map(s => (
+                      <button
+                        key={s.value}
+                        onClick={() => { setFilterStatus(s.value); setOpenFilter(false); }}
+                        className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors ${filterStatus === s.value ? 'bg-[#F4F7FE] dark:bg-horizon-dark-bg text-horizon-brand' : 'text-horizon-dark dark:text-white hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                      >
+                        {s.text}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            <button className="h-9 w-9 rounded-xl bg-[#F4F7FE] dark:bg-horizon-dark-bg flex items-center justify-center text-horizon-brand hover:bg-[#E9EDF7] transition-colors shrink-0">
+              <MoreHorizontal className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto min-h-[400px]">
@@ -138,13 +203,13 @@ export default function OrdersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-white/5">
-              {loading ? (
+              {filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-horizon-gray dark:text-horizon-dark-gray">
-                    Đang tải dữ liệu...
+                    Không tìm thấy đơn hàng nào phù hợp.
                   </td>
                 </tr>
-              ) : orders.map((order) => {
+              ) : filteredOrders.map((order) => {
                 const statusInfo = getStatusDisplay(order.status);
                 const isDropdownOpen = openDropdownId === order.id;
 
@@ -155,7 +220,6 @@ export default function OrdersPage() {
                       <div className="text-xs font-medium text-horizon-gray dark:text-horizon-dark-gray mt-0.5">{order.customerName}</div>
                     </td>
 
-                    {/* Status with Dropdown */}
                     <td className="py-4 px-2 relative">
                       <button
                         onClick={() => setOpenDropdownId(isDropdownOpen ? null : order.id)}
@@ -191,7 +255,7 @@ export default function OrdersPage() {
                       )}
                     </td>
 
-                    <td className="py-4 px-2 text-sm font-bold text-horizon-brand dark:text-white">
+                    <td className="py-4 px-2 text-sm font-bold text-red-500 dark:text-red-400">
                       {order.totalPrice?.toLocaleString('vi-VN')} đ
                     </td>
 
@@ -256,7 +320,7 @@ export default function OrdersPage() {
                 <div className="space-y-2 text-sm font-semibold text-horizon-dark dark:text-white">
                   <p>Thanh toán: {selectedOrder.paymentMethod || "Chưa cập nhật"}</p>
                   <p>Trạng thái: {getStatusDisplay(selectedOrder.status).text}</p>
-                  <p>Tổng tiền: <span className="text-horizon-brand">{selectedOrder.totalPrice?.toLocaleString('vi-VN')} đ</span></p>
+                  <p>Tổng tiền: <span className="text-red-500 font-bold">{selectedOrder.totalPrice?.toLocaleString('vi-VN')} đ</span></p>
                 </div>
               </div>
             </div>
@@ -265,14 +329,28 @@ export default function OrdersPage() {
               <h4 className="mb-3 text-sm font-bold uppercase text-horizon-gray">Sản phẩm đã đặt</h4>
               <div className="space-y-3">
                 {(selectedOrder.items || []).length > 0 ? selectedOrder.items!.map((item, index) => (
-                  <div key={`${item.productId}-${index}`} className="flex items-center gap-4 rounded-2xl border border-gray-100 p-4 dark:border-white/10">
-                    <img src={item.image || "/placeholder.png"} alt={item.productName} className="h-16 w-16 rounded-xl object-contain bg-[#F8FAFF]" />
-                    <div className="flex-1">
-                      <p className="font-bold text-horizon-dark dark:text-white">{item.productName}</p>
-                      <p className="mt-1 text-sm text-horizon-gray">{[item.color, item.storage].filter(Boolean).join(" | ") || "Không có biến thể"}</p>
-                      <p className="mt-1 text-sm font-semibold text-horizon-dark dark:text-white">x{item.qty}</p>
+                  <div key={`${item.productId}-${index}`} className="flex flex-col gap-2 rounded-2xl border border-gray-100 p-4 dark:border-white/10">
+                    <div className="flex items-center gap-4">
+                      <img src={item.image || "/placeholder.png"} alt={item.productName} className="h-16 w-16 rounded-xl object-contain bg-[#F8FAFF]" />
+                      <div className="flex-1">
+                        <p className="font-bold text-horizon-dark dark:text-white">{item.productName}</p>
+                        <p className="mt-1 text-sm text-horizon-gray">{[item.color, item.storage].filter(Boolean).join(" | ") || "Không có biến thể"}</p>
+                        <p className="mt-1 text-sm font-semibold text-horizon-dark dark:text-white">x{item.qty}</p>
+                      </div>
+                      <div className="text-right font-bold text-red-500">{item.price?.toLocaleString('vi-VN')} đ</div>
                     </div>
-                    <div className="text-right font-bold text-horizon-brand">{item.price?.toLocaleString('vi-VN')} đ</div>
+                    {item.imeis && item.imeis.length > 0 && (
+                      <div className="mt-2 bg-gray-50 dark:bg-black/20 p-3 rounded-xl">
+                        <p className="text-xs font-bold text-gray-500 mb-2">MÃ IMEI / SERIAL XUẤT KHO:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {item.imeis.map(imei => (
+                            <span key={imei} className="px-2.5 py-1 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-xs font-mono font-medium dark:text-white">
+                              {imei}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )) : (
                   <div className="rounded-2xl bg-[#F8FAFF] p-6 text-center text-sm font-semibold text-horizon-gray">
@@ -283,6 +361,17 @@ export default function OrdersPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {fulfillingOrder && (
+        <OrderFulfillmentModal
+          order={fulfillingOrder}
+          onClose={() => setFulfillingOrder(null)}
+          onSuccess={() => {
+            setFulfillingOrder(null);
+            loadOrders();
+          }}
+        />
       )}
     </div>
   );

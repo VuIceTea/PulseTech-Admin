@@ -24,7 +24,7 @@ export default function InventoryLogsPage() {
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8080/api/products/inventory-logs");
+      const res = await fetch("/backend-api/products/inventory-logs");
       if (res.ok) {
         const data = await res.json();
         setLogs(data);

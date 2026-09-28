@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { Ban, Eye, Lock, MoreHorizontal, Unlock, X } from "lucide-react";
+import Select from "react-select";
 import { toast } from "sonner";
 import AdminPageSkeleton from "../AdminPageSkeleton";
 import { adminFetch, readApiError } from "../../lib/adminAuth";
@@ -181,7 +182,7 @@ export default function CustomersPage() {
               </div>
               <div className="rounded-2xl bg-[#F8FAFF] p-4 dark:bg-horizon-dark-bg">
                 <p className="text-xs font-bold uppercase text-horizon-gray">Điểm thưởng</p>
-                <p className="mt-2 font-bold text-horizon-brand">{(selectedUser.rewardPoints ?? 0).toLocaleString("vi-VN")}</p>
+                <p className="mt-2 font-bold text-red-500 font-bold">{(selectedUser.rewardPoints ?? 0).toLocaleString("vi-VN")}</p>
               </div>
             </div>
 
@@ -194,15 +195,53 @@ export default function CustomersPage() {
               </span>
               <label className="flex items-center gap-2 text-sm font-bold text-horizon-dark dark:text-white">
                 Phân quyền
-                <select
-                  value={selectedUser.roles?.includes("ADMIN") ? "ADMIN" : selectedUser.roles?.includes("STAFF") ? "STAFF" : "USER"}
-                  onChange={(event) => handleRoleChange(selectedUser, event.target.value)}
-                  className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-horizon-brand dark:border-white/10 dark:bg-horizon-dark-card"
-                >
-                  <option value="USER">Khách hàng</option>
-                  <option value="STAFF">Nhân viên</option>
-                  <option value="ADMIN">Quản trị viên</option>
-                </select>
+                <div className="w-[180px]">
+                  <Select
+                    options={[
+                      { value: "USER", label: "Khách hàng" },
+                      { value: "STAFF", label: "Nhân viên" },
+                      { value: "ADMIN", label: "Quản trị viên" }
+                    ]}
+                    value={
+                      selectedUser.roles?.includes("ADMIN") ? { value: "ADMIN", label: "Quản trị viên" } :
+                      selectedUser.roles?.includes("STAFF") ? { value: "STAFF", label: "Nhân viên" } :
+                      { value: "USER", label: "Khách hàng" }
+                    }
+                    onChange={(option: any) => handleRoleChange(selectedUser, option ? option.value : "USER")}
+                    placeholder="Chọn quyền"
+                    isSearchable={false}
+                    styles={{
+                      control: (base: any, state: any) => ({
+                        ...base,
+                        border: state.isFocused ? '1px solid rgba(67, 24, 255, 0.5)' : '1px solid #e5e7eb',
+                        boxShadow: 'none',
+                        borderRadius: '0.75rem',
+                        padding: '0.15rem 0.25rem',
+                        fontSize: '0.875rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        backgroundColor: 'white',
+                      }),
+                      option: (base: any, state: any) => ({
+                        ...base,
+                        backgroundColor: state.isSelected ? '#4318FF' : state.isFocused ? '#eef2ff' : 'white',
+                        color: state.isSelected ? 'white' : state.isFocused ? '#4318FF' : '#1f2937',
+                        fontSize: '0.875rem',
+                        cursor: 'pointer',
+                        borderRadius: '0.5rem',
+                        margin: '0.2rem 0.4rem',
+                        width: 'auto',
+                      }),
+                      menu: (base: any) => ({
+                        ...base,
+                        borderRadius: '0.75rem',
+                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                        border: '1px solid #f3f4f6',
+                        zIndex: 50
+                      })
+                    }}
+                  />
+                </div>
               </label>
               <button onClick={() => handleAccountLockClick(selectedUser)} className="ml-auto inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-100">
                 <Ban className="h-4 w-4" />
@@ -220,7 +259,7 @@ export default function CustomersPage() {
                         <p className="font-bold text-horizon-dark dark:text-white">#{order.id}</p>
                         <p className="text-sm text-horizon-gray">{formatDate(order.createdAt)} • {statusText(order.status)}</p>
                       </div>
-                      <p className="font-bold text-horizon-brand">{order.totalPrice?.toLocaleString("vi-VN")} đ</p>
+                      <p className="font-bold text-red-500 font-bold">{order.totalPrice?.toLocaleString("vi-VN")} đ</p>
                     </div>
                     <div className="mt-3 space-y-2">
                       {(order.items || []).map((item, index) => (

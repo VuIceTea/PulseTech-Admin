@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { ShieldCheck, Search, Plus, Edit, Trash2, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import Select from "react-select";
 import { toast } from "sonner";
 
 interface Warranty {
@@ -266,16 +267,58 @@ export default function WarrantiesPage() {
               </div>
               <div>
                 <label className="text-xs font-bold text-horizon-gray dark:text-horizon-dark-gray uppercase block mb-1">Trạng thái bảo hành</label>
-                <select
-                  value={form.status}
-                  onChange={(e) => setForm({ ...form, status: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-[#F4F7FE] dark:bg-horizon-dark-card border-none rounded-xl text-sm outline-none"
-                >
-                  <option value="ACTIVE">Còn Hạn (Active)</option>
-                  <option value="IN_REPAIR">Đang Sửa Chữa (In Repair)</option>
-                  <option value="EXPIRED">Hết Hạn (Expired)</option>
-                  <option value="VOID">Từ Chối / Mất Quyền (Void)</option>
-                </select>
+                <Select
+                  options={[
+                    { value: "ACTIVE", label: "Còn Hạn (Active)" },
+                    { value: "IN_REPAIR", label: "Đang Sửa Chữa (In Repair)" },
+                    { value: "EXPIRED", label: "Hết Hạn (Expired)" },
+                    { value: "VOID", label: "Từ Chối / Mất Quyền (Void)" }
+                  ]}
+                  value={[
+                    { value: "ACTIVE", label: "Còn Hạn (Active)" },
+                    { value: "IN_REPAIR", label: "Đang Sửa Chữa (In Repair)" },
+                    { value: "EXPIRED", label: "Hết Hạn (Expired)" },
+                    { value: "VOID", label: "Từ Chối / Mất Quyền (Void)" }
+                  ].find(o => o.value === form.status) || { value: "ACTIVE", label: "Còn Hạn (Active)" }}
+                  onChange={(option: any) => setForm({ ...form, status: option ? option.value : "ACTIVE" })}
+                  isSearchable={false}
+                  styles={{
+                    control: (base: any, state: any) => ({
+                      ...base,
+                      border: state.isFocused ? '1px solid rgba(67, 24, 255, 0.5)' : 'none',
+                      boxShadow: 'none',
+                      borderRadius: '0.75rem',
+                      padding: '0.15rem',
+                      fontSize: '0.875rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      backgroundColor: 'transparent',
+                    }),
+                    option: (base: any, state: any) => ({
+                      ...base,
+                      backgroundColor: state.isSelected ? '#4318FF' : state.isFocused ? '#eef2ff' : 'white',
+                      color: state.isSelected ? 'white' : state.isFocused ? '#4318FF' : '#1f2937',
+                      fontSize: '0.875rem',
+                      cursor: 'pointer',
+                      borderRadius: '0.5rem',
+                      margin: '0.2rem 0.4rem',
+                      width: 'auto',
+                    }),
+                    menu: (base: any) => ({
+                      ...base,
+                      borderRadius: '0.75rem',
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                      border: '1px solid #f3f4f6',
+                      zIndex: 50
+                    }),
+                    container: (base: any) => ({
+                      ...base,
+                      backgroundColor: '#F4F7FE',
+                      borderRadius: '0.75rem',
+                    })
+                  }}
+                  className="dark:bg-horizon-dark-card rounded-xl"
+                />
               </div>
               <div>
                 <label className="text-xs font-bold text-horizon-gray dark:text-horizon-dark-gray uppercase block mb-1">Ghi chú lịch sử sửa chữa</label>

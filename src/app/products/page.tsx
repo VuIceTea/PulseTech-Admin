@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useEffect, useState, FormEvent } from "react";
-import { Heart, Plus, Trash2, Edit2, X, PlusCircle, MinusCircle, Loader2 } from "lucide-react";
+import { Heart, Plus, Trash2, Edit2, X, PlusCircle, MinusCircle, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import Select from "react-select";
 import dynamic from "next/dynamic";
 import AdminPageSkeleton from "../AdminPageSkeleton";
+import ImeiManagerModal from "../../components/ImeiManagerModal";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 import "react-quill-new/dist/quill.snow.css";
@@ -212,6 +213,7 @@ export default function ProductsPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+  const [managingImeiProduct, setManagingImeiProduct] = useState<Product | null>(null);
 
   // Viewer state
   const [viewSelectedImage, setViewSelectedImage] = useState<string | null>(null);
@@ -678,14 +680,17 @@ export default function ProductsPage() {
                         type="button"
                         disabled={loadingProductId === product.id}
                         onClick={(e) => { e.stopPropagation(); void openEditModal(product); }}
-                        className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100 cursor-pointer disabled:cursor-wait disabled:opacity-70"
+                        className="flex items-center justify-center gap-2 bg-white text-black px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-100 cursor-pointer w-32"
                       >
                         {loadingProductId === product.id
                           ? <Loader2 className="h-4 w-4 animate-spin" />
                           : <Edit2 className="h-4 w-4" />}
-                        {loadingProductId === product.id ? "Đang tải" : "Sửa"}
+                        Sửa
                       </button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDelete(product.id); }} className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-600 cursor-pointer">
+                      <button onClick={(e) => { e.stopPropagation(); setManagingImeiProduct(product); }} className="flex items-center justify-center gap-2 bg-horizon-brand text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-horizon-brand/90 cursor-pointer w-32">
+                        <ShieldCheck className="h-4 w-4" /> IMEI
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDelete(product.id); }} className="flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-600 cursor-pointer w-32">
                         <Trash2 className="h-4 w-4" /> Xóa
                       </button>
                     </div>
@@ -1089,7 +1094,17 @@ export default function ProductsPage() {
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-horizon-gray font-bold">+ VNĐ</span>
                         </div>
                         <div className="flex-1 relative">
-                          <input type="number" min="0" step="1" required placeholder="Tồn kho biến thể" value={s.stock != null ? s.stock.toString() : ''} onChange={(e) => updateStorage(i, 'stock', e.target.value === '' ? undefined : Math.max(0, Math.trunc(Number(e.target.value))))} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" />
+                          <input type="number" min="0" step="1" required placeholder="Tồn kho biến thể" value={s.stock != null ? s.stock.toString() : ''} onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '') {
+                              updateStorage(i, 'stock', undefined);
+                            } else {
+                              const num = Number(val);
+                              if (!isNaN(num)) {
+                                updateStorage(i, 'stock', Math.max(0, Math.trunc(num)));
+                              }
+                            }
+                          }} className="w-full bg-white dark:bg-[#0B1437] border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-black dark:text-white outline-none" />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-horizon-gray font-bold">SP</span>
                         </div>
                         <button type="button" onClick={() => removeStorage(i)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 p-2 rounded-lg transition-colors shrink-0">
@@ -1419,6 +1434,10 @@ export default function ProductsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {managingImeiProduct && (
+        <ImeiManagerModal product={managingImeiProduct} onClose={() => setManagingImeiProduct(null)} />
       )}
     </div>
   );
