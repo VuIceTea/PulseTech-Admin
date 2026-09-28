@@ -38,6 +38,7 @@ export default function CustomersPage() {
     Promise.all([
       adminFetch("/backend-api/auth/admin/users").then(res => res.ok ? res.json() : []),
       fetch("/backend-api/orders/all").then(res => res.ok ? res.json() : []),
+    ])
       .then(([userData, orderData]) => {
         setUsers(Array.isArray(userData) ? userData.filter((u: User) => !u.roles?.includes("ADMIN")) : []);
         setOrders(Array.isArray(orderData) ? orderData : []);
