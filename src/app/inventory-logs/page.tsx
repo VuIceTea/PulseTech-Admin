@@ -83,7 +83,7 @@ export default function InventoryLogsPage() {
                 {logs.map((log) => (
                   <tr key={log.id} className="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
                     <td className="py-4 px-4 text-xs font-mono text-gray-400">
-                      {new Date(log.createdAt).toLocaleString("vi-VN")}
+                      {new Date(log.createdAt + (!log.createdAt.endsWith("Z") ? "Z" : "")).toLocaleString("vi-VN")}
                     </td>
                     <td className="py-4 px-4">
                       <div className="font-bold text-horizon-dark dark:text-white">{log.productName}</div>

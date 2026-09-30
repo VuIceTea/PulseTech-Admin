@@ -86,7 +86,8 @@ export default function AdminDashboardPage() {
     fetchDashboardData();
   }, []);
 
-  const totalRevenue = profitData?.totalRevenue ?? orders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+  const completedOrders = orders.filter(o => o.status === 3);
+  const totalRevenue = profitData?.totalRevenue ?? completedOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
   const estimatedCost = profitData?.estimatedTotalCost ?? Math.round(totalRevenue * 0.7);
   const netProfit = profitData?.netProfit ?? Math.max(0, totalRevenue - estimatedCost);
 
