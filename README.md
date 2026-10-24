@@ -55,6 +55,24 @@ This project (`D:\admin`) is a **standalone web application** decoupled from the
 
 ---
 
+## 📸 Interface Preview
+
+### Dashboard overview
+
+![PulseTech Admin dashboard](docs/screenshots/dashboard.png)
+
+### Product and inventory management
+
+![PulseTech Admin product management](docs/screenshots/products.png)
+
+### Order management
+
+![PulseTech Admin order management](docs/screenshots/orders.png)
+
+The customer-facing shopping experience is available in the [PulseTech Storefront repository](https://github.com/VuIceTea/PulseTech).
+
+---
+
 ## 🚀 Getting Started
 
 ### 1. Prerequisites
@@ -71,13 +89,13 @@ npm install
 
 ### 3. Running Locally
 
-Start the local development server (runs on port **3001** or **3000**):
+Start the local development server (runs on port **5000**):
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) (or the port specified in terminal) in your browser.
+Open [http://localhost:5000](http://localhost:5000) in your browser.
 
 ### 4. Production Build & Verification
 
