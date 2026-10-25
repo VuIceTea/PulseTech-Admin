@@ -75,6 +75,30 @@ All screenshots below were captured from the local admin application at `http://
 
 The customer shopping experience is documented in the [PulseTech Storefront repository](https://github.com/VuIceTea/PulseTech#interface-preview).
 
+## End-to-End Order Visibility
+
+The following screenshots were captured after a customer completed Stripe test checkout for order `PT843205`. Personally identifying fields are replaced with demo values before the images are saved.
+
+| Live order queue | Order detail received by admin |
+|---|---|
+| ![Paid Stripe order in admin queue](docs/screenshots/demo/03-orders.png) | ![Customer, payment, item, and variant details](docs/screenshots/demo/10-order-detail.png) |
+
+| Dashboard after checkout | Inventory movement history |
+|---|---|
+| ![Live business dashboard](docs/screenshots/demo/01-dashboard.png) | ![Auditable inventory changes](docs/screenshots/demo/09-inventory-logs.png) |
+
+For each order, administrators receive the order ID and creation time; customer name, email, phone, and delivery address; payment method and current status; product image, color, storage variant, quantity, unit price, discounts, shipping, and total. The same transaction also updates the customer order history, clears the paid cart, decreases only the purchased variant's stock, and becomes available for fulfillment, shipping/tracking, IMEI assignment, warranty, return, and refund workflows.
+
+### Complete operations gallery
+
+| Products | Customers | Vouchers |
+|---|---|---|
+| ![Product management](docs/screenshots/demo/02-products.png) | ![Customer administration](docs/screenshots/demo/04-customers.png) | ![Voucher management](docs/screenshots/demo/05-vouchers.png) |
+
+| Warranties | Returns | Flash sales |
+|---|---|---|
+| ![Warranty management](docs/screenshots/demo/06-warranties.png) | ![Return management](docs/screenshots/demo/07-returns.png) | ![Flash sale management](docs/screenshots/demo/08-flash-sales.png) |
+
 ## Tech Stack
 
 | Area | Technology |
